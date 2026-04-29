@@ -1,0 +1,17 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "crons": [
+    {
+      "path": "/api/whatsapp/dispatch",
+      "schedule": "* * * * *"
+    },
+    {
+      "path": "/api/whatsapp/cron/birthday",
+      "schedule": "0 12 * * *"
+    },
+    {
+      "path": "/api/billing/dunning",
+      "schedule": "0 6 * * *"
+    }
+  ]
+}

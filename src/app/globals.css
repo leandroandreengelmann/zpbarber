@@ -1,26 +1,259 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "../styles/tokens.css";
 
+@custom-variant dark (&:is(.dark *));
+
+/* Override Untitled UI brand (purple) with blue across all brand slots. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --color-brand-25: var(--color-blue-50);
+  --color-brand-50: var(--color-blue-50);
+  --color-brand-100: var(--color-blue-100);
+  --color-brand-200: var(--color-blue-200);
+  --color-brand-300: var(--color-blue-300);
+  --color-brand-400: var(--color-blue-400);
+  --color-brand-500: var(--color-blue-500);
+  --color-brand-600: var(--color-blue-600);
+  --color-brand-700: var(--color-blue-700);
+  --color-brand-800: var(--color-blue-800);
+  --color-brand-900: var(--color-blue-900);
+
+  --color-text-brand-primary: var(--color-blue-900);
+  --color-text-brand-secondary: var(--color-blue-700);
+  --color-text-brand-secondary-hover: var(--color-blue-800);
+  --color-text-brand-tertiary: var(--color-blue-600);
+  --color-text-brand-tertiary-alt: var(--color-blue-600);
+
+  --color-border-brand: var(--color-blue-500);
+  --color-border-brand-alt: var(--color-blue-600);
+
+  --color-fg-brand-primary: var(--color-blue-600);
+  --color-fg-brand-primary-alt: var(--color-blue-600);
+  --color-fg-brand-secondary: var(--color-blue-500);
+  --color-fg-brand-secondary-alt: var(--color-blue-500);
+  --color-fg-brand-secondary-hover: var(--color-blue-600);
+
+  --color-bg-brand-primary: var(--color-blue-50);
+  --color-bg-brand-primary-alt: var(--color-blue-50);
+  --color-bg-brand-secondary: var(--color-blue-100);
+  --color-bg-brand-solid: var(--color-blue-600);
+  --color-bg-brand-solid-hover: var(--color-blue-700);
+  --color-bg-brand-section: var(--color-blue-800);
+  --color-bg-brand-section-subtle: var(--color-blue-700);
+
+  --color-effects-focus-rings-focus-ring: var(--color-blue-500);
+}
+
+.dark {
+  --color-text-brand-primary: var(--color-base-white);
+  --color-text-brand-secondary: var(--color-blue-300);
+  --color-text-brand-secondary-hover: var(--color-blue-200);
+  --color-text-brand-tertiary: var(--color-blue-400);
+  --color-text-brand-tertiary-alt: var(--color-base-white);
+
+  --color-border-brand: var(--color-blue-400);
+
+  --color-fg-brand-primary: var(--color-blue-500);
+  --color-fg-brand-secondary: var(--color-blue-500);
+
+  --color-bg-brand-primary: var(--color-blue-500);
+  --color-bg-brand-secondary: var(--color-blue-600);
+  --color-bg-brand-solid: var(--color-blue-600);
+  --color-bg-brand-solid-hover: var(--color-blue-500);
+}
+
+/* Map design-system tokens to shadcn/ui semantic slots. */
+:root {
+  --background: var(--color-bg-primary);
+  --foreground: var(--color-text-primary);
+
+  --card: var(--color-bg-primary);
+  --card-foreground: var(--color-text-primary);
+
+  --popover: var(--color-bg-primary);
+  --popover-foreground: var(--color-text-primary);
+
+  --primary: var(--color-blue-600);
+  --primary-foreground: var(--color-base-white);
+
+  --secondary: var(--color-bg-secondary);
+  --secondary-foreground: var(--color-text-primary);
+
+  --muted: var(--color-bg-secondary);
+  --muted-foreground: var(--color-text-tertiary);
+
+  --accent: var(--color-bg-tertiary);
+  --accent-foreground: var(--color-text-primary);
+
+  --destructive: var(--color-error-600);
+  --destructive-foreground: var(--color-base-white);
+
+  --border: var(--color-border-primary);
+  --input: var(--color-border-primary);
+  --ring: var(--color-blue-500);
+
+  --chart-1: var(--color-blue-500);
+  --chart-2: var(--color-success-500);
+  --chart-3: var(--color-warning-500);
+  --chart-4: var(--color-error-500);
+  --chart-5: var(--color-violet-500);
+
+  --radius: var(--radius-lg);
+
+  --sidebar: var(--color-bg-secondary);
+  --sidebar-foreground: var(--color-text-primary);
+  --sidebar-primary: var(--color-blue-600);
+  --sidebar-primary-foreground: var(--color-base-white);
+  --sidebar-accent: var(--color-bg-tertiary);
+  --sidebar-accent-foreground: var(--color-text-primary);
+  --sidebar-border: var(--color-border-primary);
+  --sidebar-ring: var(--color-blue-500);
+}
+
+.dark {
+  --background: var(--color-bg-primary);
+  --foreground: var(--color-text-primary);
+  --card: var(--color-bg-secondary);
+  --card-foreground: var(--color-text-primary);
+  --popover: var(--color-bg-secondary);
+  --popover-foreground: var(--color-text-primary);
+  --primary: var(--color-blue-500);
+  --primary-foreground: var(--color-base-white);
+  --secondary: var(--color-bg-secondary);
+  --secondary-foreground: var(--color-text-primary);
+  --muted: var(--color-bg-secondary);
+  --muted-foreground: var(--color-text-tertiary);
+  --accent: var(--color-bg-tertiary);
+  --accent-foreground: var(--color-text-primary);
+  --destructive: var(--color-error-500);
+  --destructive-foreground: var(--color-base-white);
+  --border: var(--color-border-primary);
+  --input: var(--color-border-primary);
+  --ring: var(--color-blue-400);
+  --sidebar: var(--color-bg-secondary);
+  --sidebar-foreground: var(--color-text-primary);
+  --sidebar-primary: var(--color-blue-500);
+  --sidebar-primary-foreground: var(--color-base-white);
+  --sidebar-accent: var(--color-bg-tertiary);
+  --sidebar-accent-foreground: var(--color-text-primary);
+  --sidebar-border: var(--color-border-primary);
+  --sidebar-ring: var(--color-blue-400);
 }
 
 @theme inline {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-heading: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  /* Untitled UI typography scale */
+  --text-display-xs: 24px;
+  --text-display-xs--line-height: 32px;
+  --text-display-sm: 30px;
+  --text-display-sm--line-height: 38px;
+  --text-display-md: 36px;
+  --text-display-md--line-height: 44px;
+  --text-display-lg: 48px;
+  --text-display-lg--line-height: 60px;
+  --text-display-xl: 60px;
+  --text-display-xl--line-height: 72px;
+  --text-display-2xl: 72px;
+  --text-display-2xl--line-height: 90px;
+
+  /* Untitled UI semantic colors exposed as Tailwind utilities */
+  --color-success-primary: var(--color-text-success-primary);
+  --color-warning-primary: var(--color-text-warning-primary);
+  --color-error-primary: var(--color-text-error-primary);
+  --color-brand-secondary: var(--color-text-brand-secondary);
+  --color-success-bg: var(--color-success-50);
+  --color-warning-bg: var(--color-warning-50);
+  --color-error-bg: var(--color-error-50);
+
+  /* shadcn semantic colors */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior-y: contain;
+  }
+  html {
+    @apply font-sans;
+  }
+  /* iOS Safari: fontes <16px em inputs/select disparam autozoom. Force min 16px em mobile. */
+  @media (max-width: 767px) {
+    input,
+    select,
+    textarea {
+      font-size: 16px;
+    }
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@view-transition {
+  navigation: auto;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 200ms;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media print {
+  body * {
+    visibility: hidden !important;
+  }
+  [data-slot="closing-report"],
+  [data-slot="closing-report"] * {
+    visibility: visible !important;
+  }
+  [data-slot="closing-report"] {
+    position: fixed !important;
+    inset: 0 !important;
+    margin: 0 !important;
+    padding: 16px !important;
+    max-height: none !important;
+    overflow: visible !important;
+    border: 0 !important;
+    background: white !important;
+    color: black !important;
+    z-index: 9999 !important;
+  }
 }

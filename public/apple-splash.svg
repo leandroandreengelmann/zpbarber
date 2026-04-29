@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1170 2532" preserveAspectRatio="xMidYMid meet">
+  <rect width="1170" height="2532" fill="#2970ff"/>
+  <g transform="translate(449, 1010)">
+    <rect width="272" height="272" rx="56" fill="#1565ff"/>
+    <g transform="translate(40, 40) scale(0.375)" fill="none" stroke="#ffffff" stroke-width="22" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="168" cy="168" r="44"/>
+      <circle cx="168" cy="344" r="44"/>
+      <line x1="208" y1="200" x2="416" y2="408"/>
+      <line x1="208" y1="312" x2="416" y2="104"/>
+      <line x1="296" y1="216" x2="344" y2="168"/>
+      <line x1="296" y1="296" x2="344" y2="344"/>
+    </g>
+  </g>
+  <text x="585" y="1380" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif" font-size="48" font-weight="600" fill="#ffffff" text-anchor="middle">ZP Barber</text>
+</svg>
