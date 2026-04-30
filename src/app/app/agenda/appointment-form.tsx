@@ -19,6 +19,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ClientPicker } from "./client-picker";
+import type { createClientAction } from "./actions";
 
 type State = { error?: string; ok?: boolean };
 
@@ -76,6 +78,7 @@ export function AppointmentForm({
   onSuccess,
   submitLabel,
   lockedBarberId,
+  createClientAction: createClientActionProp,
 }: {
   action: (prev: State, fd: FormData) => Promise<State>;
   clients: ClientOpt[];
@@ -87,6 +90,7 @@ export function AppointmentForm({
   onSuccess?: () => void;
   submitLabel?: string;
   lockedBarberId?: string;
+  createClientAction: typeof createClientAction;
 }) {
   const [state, formAction, pending] = useActionState<State, FormData>(action, {});
   const [barberId, setBarberId] = useState<string>(
@@ -276,31 +280,12 @@ export function AppointmentForm({
       <div className="grid gap-1.5">
         <Label htmlFor="client_id">Cliente</Label>
         <input type="hidden" name="client_id" value={clientId} />
-        <Select value={clientId} onValueChange={(v) => setClientId(v ?? "")} required>
-          <SelectTrigger id="client_id">
-            <SelectValue placeholder="Selecione um cliente">
-              {(value: string) => {
-                const c = clients.find((c) => c.id === value);
-                if (!c) return "Selecione um cliente";
-                return `${c.full_name}${c.phone ? ` · ${c.phone}` : ""}`;
-              }}
-            </SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            {clients.length === 0 ? (
-              <div className="px-3 py-2 text-text-sm text-[var(--color-text-tertiary)]">
-                Nenhum cliente cadastrado.
-              </div>
-            ) : (
-              clients.map((c) => (
-                <SelectItem key={c.id} value={c.id}>
-                  {c.full_name}
-                  {c.phone ? ` · ${c.phone}` : ""}
-                </SelectItem>
-              ))
-            )}
-          </SelectContent>
-        </Select>
+        <ClientPicker
+          clients={clients}
+          value={clientId}
+          onChange={setClientId}
+          createAction={createClientActionProp}
+        />
       </div>
 
       <div className="grid gap-5">

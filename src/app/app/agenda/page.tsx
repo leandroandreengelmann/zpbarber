@@ -273,6 +273,7 @@ export default async function AgendaPage({
               </DialogHeader>
               <AppointmentForm
                 action={createAppointmentAction}
+                createClientAction={createClientAction}
                 clients={clientOpts}
                 services={serviceOpts}
                 barbers={barbers}
@@ -291,6 +292,7 @@ export default async function AgendaPage({
 
       <NewAppointmentFab
         action={createAppointmentAction}
+        createClientAction={createClientAction}
         clients={clientOpts}
         services={serviceOpts}
         barbers={barbers}
@@ -391,6 +393,7 @@ export default async function AgendaPage({
               barbers={barbers}
               barberServices={barberServiceLinks}
               lockedBarberId={isBarberRole ? user.id : undefined}
+              createClientAction={createClientAction}
             />
           ) : view === "week" ? (
             <WeekView items={items} date={date} />

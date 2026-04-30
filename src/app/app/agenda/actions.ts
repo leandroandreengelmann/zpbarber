@@ -12,6 +12,11 @@ import { parseMoneyToCents } from "@/lib/format";
 import { dispatchAppointmentMessages } from "@/lib/whatsapp/dispatch";
 
 type State = { error?: string; ok?: boolean };
+type ClientCreateState = {
+  error?: string;
+  ok?: boolean;
+  client?: { id: string; full_name: string; phone: string | null };
+};
 
 async function ensureStaff() {
   const { user, membership } = await requireBarbershop();
@@ -22,7 +27,10 @@ async function ensureStaff() {
   };
 }
 
-export async function createClientAction(_prev: State, fd: FormData): Promise<State> {
+export async function createClientAction(
+  _prev: ClientCreateState,
+  fd: FormData
+): Promise<ClientCreateState> {
   const ctx = await ensureStaff();
   const parsed = clientSchema.safeParse({
     full_name: fd.get("full_name") ?? "",
@@ -34,16 +42,23 @@ export async function createClientAction(_prev: State, fd: FormData): Promise<St
     return { error: parsed.error.issues.map((i) => i.message).join("; ") };
   }
   const supabase = await createClient();
-  const { error } = await supabase.from("clients").insert({
-    barbershop_id: ctx.shopId,
-    full_name: parsed.data.full_name,
-    phone: parsed.data.phone || null,
-    email: parsed.data.email || null,
-    notes: parsed.data.notes || null,
-  });
+  const { data, error } = await supabase
+    .from("clients")
+    .insert({
+      barbershop_id: ctx.shopId,
+      full_name: parsed.data.full_name,
+      phone: parsed.data.phone || null,
+      email: parsed.data.email || null,
+      notes: parsed.data.notes || null,
+    })
+    .select("id, full_name, phone")
+    .single();
   if (error) return { error: error.message };
   revalidatePath("/app/agenda");
-  return { ok: true };
+  return {
+    ok: true,
+    client: { id: data.id, full_name: data.full_name, phone: data.phone },
+  };
 }
 
 export async function createAppointmentAction(

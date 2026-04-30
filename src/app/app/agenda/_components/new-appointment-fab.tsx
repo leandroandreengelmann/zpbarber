@@ -17,10 +17,14 @@ import {
   type ClientOpt,
   type ServiceOpt,
 } from "../appointment-form";
-import type { createAppointmentAction } from "../actions";
+import type {
+  createAppointmentAction,
+  createClientAction,
+} from "../actions";
 
 export function NewAppointmentFab({
   action,
+  createClientAction: createClientActionProp,
   clients,
   services,
   barbers,
@@ -29,6 +33,7 @@ export function NewAppointmentFab({
   defaultDate,
 }: {
   action: typeof createAppointmentAction;
+  createClientAction: typeof createClientAction;
   clients: ClientOpt[];
   services: ServiceOpt[];
   barbers: BarberOpt[];
@@ -65,6 +70,7 @@ export function NewAppointmentFab({
           </DialogHeader>
           <AppointmentForm
             action={action}
+            createClientAction={createClientActionProp}
             clients={clients}
             services={services}
             barbers={barbers}

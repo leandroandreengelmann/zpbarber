@@ -20,6 +20,7 @@ import type {
   ClientOpt,
   ServiceOpt,
 } from "../appointment-form";
+import type { createClientAction } from "../actions";
 import type {
   SaleClient,
   SaleProduct,
@@ -90,6 +91,7 @@ export function DayView({
   barbers,
   barberServices,
   lockedBarberId,
+  createClientAction: createClientActionProp,
 }: {
   items: DayAppt[];
   date: string;
@@ -101,6 +103,7 @@ export function DayView({
   barbers: BarberOpt[];
   barberServices: BarberServiceLink[];
   lockedBarberId?: string;
+  createClientAction: typeof createClientAction;
 }) {
   const hours = buildHours();
   const totalMinutes = (HOUR_END - HOUR_START + 1) * 60;
@@ -191,6 +194,7 @@ export function DayView({
                   barbers={barbers}
                   barberServices={barberServices}
                   lockedBarberId={lockedBarberId}
+                  createClientAction={createClientActionProp}
                 >
                   <div
                     className={`flex h-full w-full items-center overflow-hidden rounded-lg border px-3 py-2 shadow-[0_1px_2px_rgb(10_13_18_/_0.08)] transition-colors ${STATUS_SOLID[a.status]} ${STATUS_OPACITY[a.status]}`}

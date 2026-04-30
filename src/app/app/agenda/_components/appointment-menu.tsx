@@ -43,6 +43,7 @@ import {
   setAppointmentStatusAction,
   updateAppointmentAction,
 } from "../actions";
+import type { createClientAction } from "../actions";
 import {
   AppointmentForm,
   type BarberOpt,
@@ -73,6 +74,7 @@ export function AppointmentMenu({
   barbers,
   barberServices,
   lockedBarberId,
+  createClientAction: createClientActionProp,
   children,
 }: {
   appt: DayAppt;
@@ -84,6 +86,7 @@ export function AppointmentMenu({
   barbers: BarberOpt[];
   barberServices: BarberServiceLink[];
   lockedBarberId?: string;
+  createClientAction: typeof createClientAction;
   children: React.ReactNode;
 }) {
   const isMobile = useIsMobile();
@@ -388,6 +391,7 @@ export function AppointmentMenu({
           </DialogHeader>
           <AppointmentForm
             action={editAction}
+            createClientAction={createClientActionProp}
             clients={formClients}
             services={formServices}
             barbers={barbers}

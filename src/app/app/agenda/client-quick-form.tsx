@@ -12,7 +12,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-type State = { error?: string; ok?: boolean };
+type State = {
+  error?: string;
+  ok?: boolean;
+  client?: { id: string; full_name: string; phone: string | null };
+};
 
 function FieldIcon({ Icon }: { Icon: typeof UserCircleIcon }) {
   return (
