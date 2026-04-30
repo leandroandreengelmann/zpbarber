@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { signupBarbershopAction } from "./actions";
+import { maskCNPJ, maskCPF } from "@/lib/validators/tax-id";
 
 type State = { error?: string; ok?: boolean };
 
@@ -30,10 +31,21 @@ export function SignupForm({ trialDays }: { trialDays: number }) {
   const [shopName, setShopName] = useState("");
   const [shopSlug, setShopSlug] = useState("");
   const [slugManual, setSlugManual] = useState(false);
+  const [taxType, setTaxType] = useState<"cnpj" | "cpf">("cnpj");
+  const [taxValue, setTaxValue] = useState("");
 
   useEffect(() => {
     if (!slugManual) setShopSlug(slugify(shopName));
   }, [shopName, slugManual]);
+
+  useEffect(() => {
+    setTaxValue("");
+  }, [taxType]);
+
+  const taxLabel = taxType === "cnpj" ? "CNPJ da barbearia" : "Seu CPF";
+  const taxPlaceholder =
+    taxType === "cnpj" ? "00.000.000/0000-00" : "000.000.000-00";
+  const taxMaxLen = taxType === "cnpj" ? 18 : 14;
 
   return (
     <form action={formAction} className="grid gap-5">
@@ -131,6 +143,56 @@ export function SignupForm({ trialDays }: { trialDays: number }) {
           name="shop_phone"
           placeholder="(11) 99999-9999"
           maxLength={40}
+        />
+      </div>
+
+      <div className="grid gap-2">
+        <Label>A barbearia tem CNPJ?</Label>
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => setTaxType("cnpj")}
+            aria-pressed={taxType === "cnpj"}
+            className={`rounded-lg border px-3 py-2.5 text-text-sm font-medium transition-colors ${
+              taxType === "cnpj"
+                ? "border-[var(--color-border-brand-solid)] bg-[var(--color-bg-brand-primary)] text-[var(--color-text-brand-primary)]"
+                : "border-[var(--color-border-primary)] bg-[var(--color-bg-primary)] text-[var(--color-text-secondary)]"
+            }`}
+          >
+            Sim, tenho CNPJ
+          </button>
+          <button
+            type="button"
+            onClick={() => setTaxType("cpf")}
+            aria-pressed={taxType === "cpf"}
+            className={`rounded-lg border px-3 py-2.5 text-text-sm font-medium transition-colors ${
+              taxType === "cpf"
+                ? "border-[var(--color-border-brand-solid)] bg-[var(--color-bg-brand-primary)] text-[var(--color-text-brand-primary)]"
+                : "border-[var(--color-border-primary)] bg-[var(--color-bg-primary)] text-[var(--color-text-secondary)]"
+            }`}
+          >
+            Pessoa física (CPF)
+          </button>
+        </div>
+        <input type="hidden" name="tax_type" value={taxType} />
+        <Label htmlFor="tax_value" className="mt-1">
+          {taxLabel}
+        </Label>
+        <Input
+          id="tax_value"
+          name="tax_value"
+          required
+          inputMode="numeric"
+          placeholder={taxPlaceholder}
+          maxLength={taxMaxLen}
+          value={taxValue}
+          onChange={(e) => {
+            const masked =
+              taxType === "cnpj"
+                ? maskCNPJ(e.target.value)
+                : maskCPF(e.target.value);
+            setTaxValue(masked);
+          }}
         />
       </div>
 
