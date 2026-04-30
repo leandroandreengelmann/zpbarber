@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
+import { TopProgress } from "@/components/ui/top-progress";
 import { ServiceWorkerRegister } from "@/components/pwa/service-worker-register";
 import { InstallPrompt } from "@/components/pwa/install-prompt";
 
@@ -69,6 +70,7 @@ export default async function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-background text-foreground" suppressHydrationWarning>
         <ThemeProvider>
+          <TopProgress />
           {children}
           <Toaster position="top-right" expand />
           <ServiceWorkerRegister />
