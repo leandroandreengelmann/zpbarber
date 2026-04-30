@@ -2,6 +2,9 @@
 
 import { useActionState, useEffect, useState } from "react";
 import {
+  EyeIcon,
+  EyeSlashIcon,
+  LockKeyIcon,
   UserPlusIcon,
   WarningCircleIcon,
 } from "@phosphor-icons/react";
@@ -33,6 +36,7 @@ export function SignupForm({ trialDays }: { trialDays: number }) {
   const [slugManual, setSlugManual] = useState(false);
   const [taxType, setTaxType] = useState<"cnpj" | "cpf">("cnpj");
   const [taxValue, setTaxValue] = useState("");
+  const [pwVisible, setPwVisible] = useState(false);
 
   useEffect(() => {
     if (!slugManual) setShopSlug(slugify(shopName));
@@ -87,15 +91,35 @@ export function SignupForm({ trialDays }: { trialDays: number }) {
 
       <div className="grid gap-1.5">
         <Label htmlFor="password">Senha</Label>
-        <Input
-          id="password"
-          name="password"
-          type="password"
-          required
-          minLength={8}
-          placeholder="Mínimo 8 caracteres"
-          autoComplete="new-password"
-        />
+        <div className="relative">
+          <LockKeyIcon
+            size={28}
+            weight="duotone"
+            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-fg-quaternary)]"
+          />
+          <Input
+            id="password"
+            name="password"
+            type={pwVisible ? "text" : "password"}
+            required
+            minLength={8}
+            placeholder="Mínimo 8 caracteres"
+            autoComplete="new-password"
+            className="h-11 pl-9 pr-10 text-text-md"
+          />
+          <button
+            type="button"
+            onClick={() => setPwVisible((v) => !v)}
+            aria-label={pwVisible ? "Ocultar senha" : "Mostrar senha"}
+            className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-1.5 text-[var(--color-fg-quaternary)] transition-colors hover:bg-[var(--color-bg-secondary)] hover:text-[var(--color-fg-secondary)]"
+          >
+            {pwVisible ? (
+              <EyeSlashIcon size={20} weight="duotone" />
+            ) : (
+              <EyeIcon size={20} weight="duotone" />
+            )}
+          </button>
+        </div>
       </div>
 
       <div className="border-t border-[var(--color-border-secondary)] pt-5" />
