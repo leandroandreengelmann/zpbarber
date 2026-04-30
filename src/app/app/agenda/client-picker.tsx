@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import {
   CaretDownIcon,
+  CircleNotchIcon,
   EnvelopeSimpleIcon,
   FloppyDiskIcon,
   MagnifyingGlassIcon,
@@ -250,7 +251,8 @@ function InlineCreateForm({
   }
 
   return (
-    <div className="grid gap-3 p-3"
+    <div
+      className="relative grid gap-3 p-3"
       onKeyDown={(e) => {
         if (e.key === "Enter" && !pending) {
           e.preventDefault();
@@ -258,6 +260,17 @@ function InlineCreateForm({
         }
       }}
     >
+      {pending && (
+        <div
+          aria-live="polite"
+          className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-[var(--color-bg-primary)]/70 backdrop-blur-[1px]"
+        >
+          <span className="inline-flex items-center gap-2 rounded-full border border-[var(--color-border-secondary)] bg-[var(--color-bg-primary)] px-3 py-1.5 text-text-sm font-medium text-[var(--color-text-secondary)] shadow-sm">
+            <CircleNotchIcon size={18} weight="bold" className="animate-spin text-[var(--color-blue-600)]" />
+            Cadastrando cliente...
+          </span>
+        </div>
+      )}
       <div className="flex items-center justify-between">
         <span className="text-text-sm font-semibold text-[var(--color-text-primary)]">
           Novo cliente
@@ -337,9 +350,14 @@ function InlineCreateForm({
         type="button"
         onClick={submit}
         disabled={pending}
+        aria-busy={pending}
         className="h-10 w-full"
       >
-        <FloppyDiskIcon size={20} weight="duotone" />
+        {pending ? (
+          <CircleNotchIcon size={20} weight="bold" className="animate-spin" />
+        ) : (
+          <FloppyDiskIcon size={20} weight="duotone" />
+        )}
         {pending ? "Cadastrando..." : "Cadastrar e selecionar"}
       </Button>
     </div>
