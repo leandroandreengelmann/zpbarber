@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import {
   CaretDownIcon,
   EnvelopeSimpleIcon,
@@ -213,25 +213,51 @@ function InlineCreateForm({
   onCancel: () => void;
   onCreated: (c: { id: string; full_name: string; phone: string | null }) => void;
 }) {
-  const [state, formAction, pending] = useActionState<CreateState, FormData>(
-    action,
-    {}
-  );
+  const [pending, startTransition] = useTransition();
+  const fullNameRef = useRef<HTMLInputElement>(null);
+  const phoneRef = useRef<HTMLInputElement>(null);
+  const emailRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    if (state.ok && state.client) {
-      notify.success("Cliente cadastrado", {
-        description: "Selecionado automaticamente no agendamento.",
-      });
-      onCreated(state.client);
+  function submit() {
+    const full_name = fullNameRef.current?.value.trim() ?? "";
+    const phone = phoneRef.current?.value.trim() ?? "";
+    const email = emailRef.current?.value.trim() ?? "";
+    if (!full_name) {
+      notify.error("Nome é obrigatório");
+      fullNameRef.current?.focus();
+      return;
     }
-    if (state.error) {
-      notify.error("Não foi possível cadastrar", { description: state.error });
+    if (phone.length < 8) {
+      notify.error("Informe um telefone válido");
+      phoneRef.current?.focus();
+      return;
     }
-  }, [state, onCreated]);
+    const fd = new FormData();
+    fd.set("full_name", full_name);
+    fd.set("phone", phone);
+    fd.set("email", email);
+    startTransition(async () => {
+      const result: CreateState = await action({}, fd);
+      if (result.ok && result.client) {
+        notify.success("Cliente cadastrado", {
+          description: "Selecionado automaticamente no agendamento.",
+        });
+        onCreated(result.client);
+      } else if (result.error) {
+        notify.error("Não foi possível cadastrar", { description: result.error });
+      }
+    });
+  }
 
   return (
-    <form action={formAction} className="grid gap-3 p-3">
+    <div className="grid gap-3 p-3"
+      onKeyDown={(e) => {
+        if (e.key === "Enter" && !pending) {
+          e.preventDefault();
+          submit();
+        }
+      }}
+    >
       <div className="flex items-center justify-between">
         <span className="text-text-sm font-semibold text-[var(--color-text-primary)]">
           Novo cliente
@@ -256,6 +282,7 @@ function InlineCreateForm({
             className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-fg-quaternary)]"
           />
           <Input
+            ref={fullNameRef}
             id="qc_full_name"
             name="full_name"
             required
@@ -275,6 +302,7 @@ function InlineCreateForm({
             className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-fg-quaternary)]"
           />
           <Input
+            ref={phoneRef}
             id="qc_phone"
             name="phone"
             type="tel"
@@ -296,6 +324,7 @@ function InlineCreateForm({
             className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-fg-quaternary)]"
           />
           <Input
+            ref={emailRef}
             id="qc_email"
             name="email"
             type="email"
@@ -304,10 +333,15 @@ function InlineCreateForm({
           />
         </div>
       </div>
-      <Button type="submit" disabled={pending} className="h-10 w-full">
+      <Button
+        type="button"
+        onClick={submit}
+        disabled={pending}
+        className="h-10 w-full"
+      >
         <FloppyDiskIcon size={20} weight="duotone" />
         {pending ? "Cadastrando..." : "Cadastrar e selecionar"}
       </Button>
-    </form>
+    </div>
   );
 }
