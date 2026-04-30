@@ -4,15 +4,14 @@ import Image from "next/image";
 import {
   CheckCircleIcon,
   EnvelopeSimpleIcon,
-  SignInIcon,
   WarningCircleIcon,
 } from "@phosphor-icons/react/dist/ssr";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { signInAction } from "./actions";
 import { PasswordInput } from "./password-input";
+import { LoginSubmitButton } from "./submit-button";
 
 type SearchParams = Promise<{ next?: string; error?: string; reset?: string }>;
 
@@ -106,10 +105,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Search
               <PasswordInput />
             </div>
 
-            <Button type="submit" size="lg" className="mt-1 h-11 w-full text-text-md font-semibold">
-              <SignInIcon size={28} weight="duotone" />
-              Entrar
-            </Button>
+            <LoginSubmitButton />
           </form>
 
           <p className="mt-8 text-center text-text-sm text-[var(--color-text-tertiary)]">
