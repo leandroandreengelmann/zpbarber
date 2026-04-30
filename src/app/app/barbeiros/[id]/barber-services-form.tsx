@@ -127,7 +127,7 @@ export function BarberServicesForm({
             <div
               key={row.service_id}
               data-enabled={row.enabled}
-              className="grid gap-3 rounded-lg border border-[var(--color-border-secondary)] bg-[var(--color-bg-primary)] p-4 data-[enabled=false]:opacity-70"
+              className="grid gap-3 rounded-lg border border-[var(--color-border-secondary)] bg-[var(--color-bg-primary)] p-3 sm:p-4 data-[enabled=false]:opacity-70"
             >
               <div className="flex items-center justify-between gap-3">
                 <label className="flex flex-1 items-center gap-3">
@@ -135,8 +135,8 @@ export function BarberServicesForm({
                     checked={row.enabled}
                     onCheckedChange={(v) => update(idx, { enabled: !!v })}
                   />
-                  <div className="grid">
-                    <span className="text-text-sm font-semibold text-[var(--color-text-primary)]">
+                  <div className="grid min-w-0 flex-1">
+                    <span className="text-text-sm font-semibold text-[var(--color-text-primary)] break-words">
                       {svc.name}
                     </span>
                     <span className="text-text-xs text-[var(--color-text-tertiary)]">
@@ -150,7 +150,7 @@ export function BarberServicesForm({
               {row.enabled && (
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                   <div className="grid gap-1">
-                    <span className="text-[11px] uppercase tracking-wide text-[var(--color-text-tertiary)]">
+                    <span className="text-text-xs uppercase tracking-wide text-[var(--color-text-tertiary)]">
                       Preço próprio (R$)
                     </span>
                     <Input
@@ -162,7 +162,7 @@ export function BarberServicesForm({
                     />
                   </div>
                   <div className="grid gap-1">
-                    <span className="text-[11px] uppercase tracking-wide text-[var(--color-text-tertiary)]">
+                    <span className="text-text-xs uppercase tracking-wide text-[var(--color-text-tertiary)]">
                       Duração (min)
                     </span>
                     <Input
@@ -176,7 +176,7 @@ export function BarberServicesForm({
                     />
                   </div>
                   <div className="grid gap-1">
-                    <span className="text-[11px] uppercase tracking-wide text-[var(--color-text-tertiary)]">
+                    <span className="text-text-xs uppercase tracking-wide text-[var(--color-text-tertiary)]">
                       Comissão (%)
                     </span>
                     <Input
@@ -198,8 +198,8 @@ export function BarberServicesForm({
         Campos vazios herdam o valor padrão do serviço.
       </p>
 
-      <div className="flex justify-end">
-        <Button type="submit" disabled={pending || disabled} className="h-11">
+      <div className="flex justify-stretch sm:justify-end">
+        <Button type="submit" disabled={pending || disabled} className="h-11 w-full sm:w-auto">
           <FloppyDiskIcon size={28} weight="duotone" />
           {pending ? "Salvando..." : "Salvar serviços"}
         </Button>

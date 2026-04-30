@@ -158,19 +158,19 @@ export default async function BarberDetailPage({
   const updateProfileAction = updateBarberProfileAction.bind(null, id);
 
   return (
-    <div className="mx-auto grid w-full max-w-4xl gap-6">
+    <div className="mx-auto grid w-full max-w-4xl gap-4 sm:gap-6">
       <div>
         <Link
           href="/app/barbeiros"
-          className={buttonVariants({ variant: "ghost", size: "sm" })}
+          className={`${buttonVariants({ variant: "ghost", size: "sm" })} min-h-11 sm:min-h-0`}
         >
-          <ArrowLeftIcon size={28} weight="duotone" />
+          <ArrowLeftIcon size={24} weight="duotone" />
           Voltar à equipe
         </Link>
       </div>
 
-      <div className="flex flex-wrap items-center gap-4">
-        <Avatar className="size-14">
+      <div className="flex flex-wrap items-center gap-3 sm:gap-4">
+        <Avatar className="size-12 sm:size-14">
           {member.user.avatar_url ? (
             <AvatarImage
               src={member.user.avatar_url}
@@ -181,11 +181,11 @@ export default async function BarberDetailPage({
             {initials(member.user.full_name)}
           </AvatarFallback>
         </Avatar>
-        <div className="grid gap-1">
-          <h1 className="text-display-xs font-semibold tracking-tight text-[var(--color-text-primary)]">
+        <div className="grid min-w-0 flex-1 gap-1">
+          <h1 className="text-text-xl font-semibold tracking-tight text-[var(--color-text-primary)] sm:text-display-xs break-words">
             {member.user.full_name ?? "Sem nome"}
           </h1>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Badge variant={member.role === "gestor" ? "default" : "outline"}>
               {ROLE_LABEL[member.role] ?? member.role}
             </Badge>
@@ -208,33 +208,37 @@ export default async function BarberDetailPage({
       )}
 
       <Tabs defaultValue="services">
-        <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        <TabsList className="w-max">
-          <TabsTrigger value="services">
-            <ScissorsIcon size={20} weight="duotone" />
-            Serviços
-          </TabsTrigger>
-          <TabsTrigger value="commission">
-            <PercentIcon size={20} weight="duotone" />
-            Comissão
-          </TabsTrigger>
-          <TabsTrigger value="hours">
-            <ClockIcon size={20} weight="duotone" />
-            Horários
-          </TabsTrigger>
-          <TabsTrigger value="time-off">
-            <ClockCounterClockwiseIcon size={20} weight="duotone" />
-            Folgas
-          </TabsTrigger>
-          <TabsTrigger value="reviews">
-            <StarIcon size={20} weight="duotone" />
-            Avaliações
-          </TabsTrigger>
-          <TabsTrigger value="profile">
-            <UserCircleIcon size={20} weight="duotone" />
-            Perfil
-          </TabsTrigger>
-        </TabsList>
+        <div className="relative -mx-4 sm:mx-0">
+          <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-4 bg-gradient-to-r from-[var(--color-bg-primary)] to-transparent sm:hidden" />
+          <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-4 bg-gradient-to-l from-[var(--color-bg-primary)] to-transparent sm:hidden" />
+          <div className="overflow-x-auto px-4 sm:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <TabsList className="w-max">
+              <TabsTrigger value="services" aria-label="Serviços" className="min-h-11 sm:min-h-0">
+                <ScissorsIcon size={22} weight="duotone" />
+                <span className="hidden sm:inline">Serviços</span>
+              </TabsTrigger>
+              <TabsTrigger value="commission" aria-label="Comissão" className="min-h-11 sm:min-h-0">
+                <PercentIcon size={22} weight="duotone" />
+                <span className="hidden sm:inline">Comissão</span>
+              </TabsTrigger>
+              <TabsTrigger value="hours" aria-label="Horários" className="min-h-11 sm:min-h-0">
+                <ClockIcon size={22} weight="duotone" />
+                <span className="hidden sm:inline">Horários</span>
+              </TabsTrigger>
+              <TabsTrigger value="time-off" aria-label="Folgas" className="min-h-11 sm:min-h-0">
+                <ClockCounterClockwiseIcon size={22} weight="duotone" />
+                <span className="hidden sm:inline">Folgas</span>
+              </TabsTrigger>
+              <TabsTrigger value="reviews" aria-label="Avaliações" className="min-h-11 sm:min-h-0">
+                <StarIcon size={22} weight="duotone" />
+                <span className="hidden sm:inline">Avaliações</span>
+              </TabsTrigger>
+              <TabsTrigger value="profile" aria-label="Perfil" className="min-h-11 sm:min-h-0">
+                <UserCircleIcon size={22} weight="duotone" />
+                <span className="hidden sm:inline">Perfil</span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
         </div>
 
         <TabsContent value="services">
@@ -351,13 +355,13 @@ export default async function BarberDetailPage({
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="grid gap-4">
-                  <div className="flex flex-wrap items-center gap-6 rounded-xl border border-[var(--color-border-secondary)] bg-[var(--color-bg-secondary)] p-4">
+                  <div className="flex flex-wrap items-center gap-3 rounded-xl border border-[var(--color-border-secondary)] bg-[var(--color-bg-secondary)] p-3 sm:gap-6 sm:p-4">
                     <div className="grid gap-0.5">
                       <span className="text-text-xs uppercase tracking-wide text-[var(--color-text-tertiary)]">
                         Nota média
                       </span>
                       <div className="flex items-center gap-2">
-                        <span className="text-display-xs font-semibold tabular-nums text-[var(--color-text-primary)]">
+                        <span className="text-text-2xl font-semibold tabular-nums text-[var(--color-text-primary)] sm:text-display-xs">
                           {total > 0 ? avg.toFixed(2).replace(".", ",") : "—"}
                         </span>
                         {total > 0 && <Stars rating={Math.round(avg)} size={20} />}
@@ -367,7 +371,7 @@ export default async function BarberDetailPage({
                       <span className="text-text-xs uppercase tracking-wide text-[var(--color-text-tertiary)]">
                         Total
                       </span>
-                      <span className="text-display-xs font-semibold tabular-nums text-[var(--color-text-primary)]">
+                      <span className="text-text-2xl font-semibold tabular-nums text-[var(--color-text-primary)] sm:text-display-xs">
                         {total}
                       </span>
                     </div>
