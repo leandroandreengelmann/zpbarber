@@ -107,8 +107,9 @@ export function formatDateBR(
   patternOrTimezone: string = "dd/MM/yyyy",
   timezone: string = TIMEZONE,
 ) {
-  // Backward compat: if 2nd arg looks like an IANA timezone, treat it as tz with default pattern.
-  const isTz = patternOrTimezone.includes("/");
+  // Detecta IANA tz pelo prefixo maiúsculo (America/..., Europe/..., UTC).
+  // Patterns começam com minúscula (dd/MM/yyyy, HH:mm, etc.).
+  const isTz = /^[A-Z]/.test(patternOrTimezone);
   const pattern = isTz ? "dd/MM/yyyy" : patternOrTimezone;
   const tz = isTz ? patternOrTimezone : timezone;
   return formatInTimeZone(value, tz, pattern, { locale: ptBR });
