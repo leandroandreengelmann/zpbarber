@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useTransition } from "react";
+import { useActionState, useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
   CheckCircleIcon,
@@ -67,6 +67,18 @@ export function ConnectCard({
     if (refreshState.ok) router.refresh();
   }, [refreshState.ok, router]);
 
+  // Formata data só após hidratar (evita mismatch de timezone server/client).
+  const [lastConnectedLabel, setLastConnectedLabel] = useState<string | null>(
+    null
+  );
+  useEffect(() => {
+    if (lastConnectedAt) {
+      setLastConnectedLabel(new Date(lastConnectedAt).toLocaleString("pt-BR"));
+    } else {
+      setLastConnectedLabel(null);
+    }
+  }, [lastConnectedAt]);
+
   const isConnected = status === "connected";
   const qr = connectState.qr ?? lastQr;
   const error =
@@ -103,9 +115,12 @@ export function ConnectCard({
               <span className="text-text-sm text-[var(--color-text-secondary)]">
                 Número: <strong>+{phone ?? "—"}</strong>
               </span>
-              {lastConnectedAt && (
-                <span className="text-text-xs text-[var(--color-text-tertiary)]">
-                  Desde {new Date(lastConnectedAt).toLocaleString("pt-BR")}
+              {lastConnectedLabel && (
+                <span
+                  className="text-text-xs text-[var(--color-text-tertiary)]"
+                  suppressHydrationWarning
+                >
+                  Desde {lastConnectedLabel}
                 </span>
               )}
             </div>
