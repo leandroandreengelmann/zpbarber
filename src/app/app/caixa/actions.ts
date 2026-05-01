@@ -323,8 +323,12 @@ export async function buildClosingSummary(sessionId: string): Promise<ClosingSum
 export async function createSaleAction(_prev: State, fd: FormData): Promise<State> {
   const c = await ctx();
   let payload: unknown;
+  const raw = (fd.get("payload") as string) ?? "{}";
+  if (raw.length > 64 * 1024) {
+    return { error: "Payload muito grande." };
+  }
   try {
-    payload = JSON.parse((fd.get("payload") as string) ?? "{}");
+    payload = JSON.parse(raw);
   } catch {
     return { error: "Payload inválido." };
   }
@@ -514,7 +518,8 @@ export async function cancelSaleAction(saleId: string) {
   const { error } = await supabase
     .from("sales")
     .update({ status: "cancelled" })
-    .eq("id", saleId);
+    .eq("id", saleId)
+    .eq("barbershop_id", c.shopId);
   if (error) throw error;
 
   await logAudit({

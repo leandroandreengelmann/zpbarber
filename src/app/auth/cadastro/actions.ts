@@ -8,6 +8,7 @@ import { ACTIVE_TENANT_COOKIE } from "@/lib/auth/current-tenant";
 import { signupSchema } from "@/lib/zod/signup";
 import { getPlatformSettings } from "@/lib/platform-settings";
 import { logAudit } from "@/lib/audit/log";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
 type State = { error?: string; ok?: boolean };
 
@@ -15,6 +16,11 @@ export async function signupBarbershopAction(
   _prev: State,
   formData: FormData
 ): Promise<State> {
+  const ip = await getClientIp();
+  const rl = await checkRateLimit(`signup_shop:${ip}`, 3, 3600);
+  if (!rl.ok) {
+    return { error: "Muitas tentativas. Tente novamente em alguns minutos." };
+  }
   const taxTypeRaw = String(formData.get("tax_type") ?? "");
   const taxType = taxTypeRaw === "cpf" ? "cpf" : "cnpj";
 

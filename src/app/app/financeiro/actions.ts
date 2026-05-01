@@ -120,7 +120,8 @@ export async function deleteExpenseCategoryAction(
   const { error } = await supabase
     .from("expense_categories")
     .delete()
-    .eq("id", parsed.data.id);
+    .eq("id", parsed.data.id)
+    .eq("barbershop_id", c.shopId);
   if (error) return { error: error.message };
   revalidatePath("/app/financeiro/categorias");
   revalidatePath("/app/financeiro/a-pagar");
@@ -244,7 +245,8 @@ export async function updateExpenseAction(
       due_date: d.due_date,
       notes: d.notes || null,
     })
-    .eq("id", d.id);
+    .eq("id", d.id)
+    .eq("barbershop_id", c.shopId);
   if (error) return { error: error.message };
   revalidatePath("/app/financeiro");
   revalidatePath("/app/financeiro/a-pagar");
@@ -476,7 +478,8 @@ export async function updateReceivableAction(
       due_date: d.due_date,
       notes: d.notes || null,
     })
-    .eq("id", d.id);
+    .eq("id", d.id)
+    .eq("barbershop_id", c.shopId);
   if (error) return { error: error.message };
   revalidatePath("/app/financeiro");
   revalidatePath("/app/financeiro/a-receber");

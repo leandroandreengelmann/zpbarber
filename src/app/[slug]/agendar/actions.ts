@@ -5,6 +5,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { dispatchAppointmentMessages } from "@/lib/whatsapp/dispatch";
 import { sendPushToUsers } from "@/lib/push/send";
 import { publicBookingSchema } from "@/lib/zod/public-booking";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
 export type BookingShop = {
   id: string;
@@ -104,6 +105,13 @@ export async function createPublicAppointmentAction(
     return { error: parsed.error.issues.map((i) => i.message).join("; ") };
   }
   const v = parsed.data;
+
+  const ip = await getClientIp();
+  const rlIp = await checkRateLimit(`booking_ip:${ip}`, 10, 3600);
+  const rlPhone = await checkRateLimit(`booking_phone:${v.client_phone}`, 5, 3600);
+  if (!rlIp.ok || !rlPhone.ok) {
+    return { error: "Muitas tentativas. Tente novamente em alguns minutos." };
+  }
 
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("fn_public_create_appointment", {

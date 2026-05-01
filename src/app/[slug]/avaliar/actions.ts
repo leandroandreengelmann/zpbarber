@@ -2,6 +2,7 @@
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { publicReviewSchema } from "@/lib/zod/reviews";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
 export type PublicReviewState = { ok?: boolean; error?: string };
 
@@ -17,6 +18,11 @@ export async function submitPublicReviewAction(
   });
   if (!parsed.success) {
     return { error: parsed.error.issues.map((i) => i.message).join("; ") };
+  }
+  const ip = await getClientIp();
+  const rl = await checkRateLimit(`review_ip:${ip}`, 10, 86400);
+  if (!rl.ok) {
+    return { error: "Muitas avaliações enviadas. Tente novamente amanhã." };
   }
   const supabase = createAdminClient();
   const { error } = await supabase.rpc("fn_create_public_review", {

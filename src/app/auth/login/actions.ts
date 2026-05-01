@@ -5,11 +5,12 @@ import { cookies } from "next/headers";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { ACTIVE_TENANT_COOKIE } from "@/lib/auth/current-tenant";
+import { safeNext } from "@/lib/auth/safe-redirect";
 
 export async function signInAction(formData: FormData) {
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
-  const next = String(formData.get("next") ?? "");
+  const nextRaw = String(formData.get("next") ?? "");
 
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -26,11 +27,12 @@ export async function signInAction(formData: FormData) {
     .eq("id", user.id)
     .maybeSingle();
 
-  if (profile?.is_super_admin) redirect(next || "/admin");
+  if (profile?.is_super_admin) redirect(safeNext(nextRaw, "/admin"));
 
   const { data: memberships } = await supabase
     .from("barbershop_members")
     .select("barbershop_id")
+    .eq("user_id", user.id)
     .eq("is_active", true);
 
   if (!memberships || memberships.length === 0) {
@@ -50,7 +52,7 @@ export async function signInAction(formData: FormData) {
       path: "/",
       maxAge: 60 * 60 * 24 * 30,
     });
-    redirect(next || "/app");
+    redirect(safeNext(nextRaw, "/app"));
   }
 
   redirect("/auth/select-tenant");

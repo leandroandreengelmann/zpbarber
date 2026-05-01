@@ -7,6 +7,8 @@ export type AuditAction =
   | "sale.cancel"
   | "barbershop.status_change"
   | "barbershop.create"
+  | "barbershop.impersonate_enter"
+  | "barbershop.impersonate_exit"
   | "membership.role_change"
   | "membership.remove"
   | "announcement.create"

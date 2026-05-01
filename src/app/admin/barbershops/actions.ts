@@ -170,13 +170,28 @@ export async function enterBarbershopAction(barbershopId: string) {
     path: "/",
     maxAge: 60 * 60 * 24 * 30,
   });
+  await logAudit({
+    action: "barbershop.impersonate_enter",
+    barbershopId,
+    resourceType: "barbershop",
+    resourceId: barbershopId,
+  });
   redirect("/app");
 }
 
 export async function exitBarbershopAction() {
   await requireSuperAdmin();
   const c = await cookies();
+  const previous = c.get(ACTIVE_TENANT_COOKIE)?.value ?? null;
   c.delete(ACTIVE_TENANT_COOKIE);
+  if (previous) {
+    await logAudit({
+      action: "barbershop.impersonate_exit",
+      barbershopId: previous,
+      resourceType: "barbershop",
+      resourceId: previous,
+    });
+  }
   redirect("/admin/barbershops");
 }
 

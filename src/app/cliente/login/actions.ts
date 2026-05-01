@@ -3,12 +3,14 @@
 import { redirect } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { safeNext } from "@/lib/auth/safe-redirect";
 
 export async function signInClientAction(formData: FormData) {
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const password = String(formData.get("password") ?? "");
-  const next = String(formData.get("next") ?? "");
-  const nextParam = next ? `&next=${encodeURIComponent(next)}` : "";
+  const nextRaw = String(formData.get("next") ?? "");
+  const nextValidated = safeNext(nextRaw, "");
+  const nextParam = nextValidated ? `&next=${encodeURIComponent(nextValidated)}` : "";
 
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -48,7 +50,7 @@ export async function signInClientAction(formData: FormData) {
       .eq("id", user.id);
   }
 
-  redirect(next || "/conta");
+  redirect(safeNext(nextValidated, "/conta"));
 }
 
 export async function signOutClientAction() {

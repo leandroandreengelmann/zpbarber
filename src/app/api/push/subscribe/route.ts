@@ -28,6 +28,17 @@ export async function POST(req: Request) {
   if (!sub.endpoint || !sub.keys?.p256dh || !sub.keys?.auth) {
     return NextResponse.json({ error: "invalid_subscription" }, { status: 400 });
   }
+  try {
+    const u = new URL(sub.endpoint);
+    if (u.protocol !== "https:") {
+      return NextResponse.json({ error: "invalid_endpoint_protocol" }, { status: 400 });
+    }
+  } catch {
+    return NextResponse.json({ error: "invalid_endpoint_url" }, { status: 400 });
+  }
+  if (sub.endpoint.length > 2048) {
+    return NextResponse.json({ error: "endpoint_too_long" }, { status: 400 });
+  }
 
   const userAgent = req.headers.get("user-agent")?.slice(0, 300) ?? null;
 

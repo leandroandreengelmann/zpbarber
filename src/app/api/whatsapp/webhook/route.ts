@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { normalizePhone } from "@/lib/phone";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -10,7 +11,25 @@ type EvolutionEvent = {
   data?: unknown;
 };
 
+function authorizedEvolution(req: Request): boolean {
+  const secret = process.env.EVOLUTION_WEBHOOK_TOKEN ?? "";
+  if (!secret) return process.env.NODE_ENV !== "production";
+  const provided =
+    req.headers.get("x-evolution-token") ??
+    req.headers.get("X-Evolution-Token") ??
+    "";
+  if (provided.length !== secret.length) return false;
+  let diff = 0;
+  for (let i = 0; i < secret.length; i++) {
+    diff |= secret.charCodeAt(i) ^ provided.charCodeAt(i);
+  }
+  return diff === 0;
+}
+
 export async function POST(req: Request) {
+  if (!authorizedEvolution(req)) {
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  }
   let payload: EvolutionEvent | null = null;
   try {
     payload = (await req.json()) as EvolutionEvent;
@@ -105,6 +124,12 @@ export async function POST(req: Request) {
             .eq("evolution_instance_name", instanceName)
             .maybeSingle();
           if (shop?.barbershop_id) {
+            const e164 = normalizePhone(phone) ?? normalizePhone(`+${phone}`);
+            const last8 = phone.slice(-8);
+            const last9 = phone.slice(-9);
+            const candidates = Array.from(
+              new Set([e164, `+${phone}`, phone, last9, last8].filter(Boolean) as string[])
+            );
             await supabase
               .from("clients")
               .update({
@@ -112,7 +137,7 @@ export async function POST(req: Request) {
                 whatsapp_optout_at: new Date().toISOString(),
               })
               .eq("barbershop_id", shop.barbershop_id)
-              .ilike("phone", `%${phone.slice(-8)}%`);
+              .in("phone", candidates);
           }
         }
         break;

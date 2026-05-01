@@ -25,6 +25,15 @@ type AsaasWebhookEvent = {
 
 export const dynamic = "force-dynamic";
 
+function timingSafeEqualStrings(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) {
+    diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return diff === 0;
+}
+
 export async function POST(request: NextRequest) {
   const provided =
     request.headers.get("asaas-access-token") ??
@@ -46,7 +55,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  if (provided !== cfg.webhook_token) {
+  if (!timingSafeEqualStrings(provided, cfg.webhook_token)) {
     return NextResponse.json({ error: "invalid token" }, { status: 401 });
   }
 
@@ -62,6 +71,18 @@ export async function POST(request: NextRequest) {
   }
 
   const p = body.payment;
+  const dedupKey = `${body.event}:${p.id}`;
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error: dupErr } = await (supabase as any)
+      .from("webhook_events_seen")
+      .insert({ provider: "asaas", event_id: dedupKey });
+    if (dupErr && (dupErr.code === "23505" || /duplicate/i.test(dupErr.message ?? ""))) {
+      return NextResponse.json({ ok: true, ignored: "duplicate event" });
+    }
+  } catch {
+    // tabela pode não existir ainda — segue (compat backwards até a migration ser aplicada)
+  }
   const status = mapAsaasPaymentStatus(p.status);
   const nowIso = new Date().toISOString();
 

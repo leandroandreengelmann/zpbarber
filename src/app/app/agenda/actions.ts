@@ -212,14 +212,15 @@ export async function updateAppointmentAction(
 }
 
 export async function setAppointmentStatusAction(id: string, status: string) {
-  await ensureStaff();
+  const ctx = await ensureStaff();
   const parsed = updateStatusSchema.safeParse({ status });
   if (!parsed.success) throw new Error("status inválido");
   const supabase = await createClient();
   const { error } = await supabase
     .from("appointments")
     .update({ status: parsed.data.status })
-    .eq("id", id);
+    .eq("id", id)
+    .eq("barbershop_id", ctx.shopId);
   if (error) throw new Error(translateAppointmentError(error.message));
   revalidatePath("/app/agenda");
 }
@@ -228,7 +229,11 @@ export async function deleteAppointmentAction(id: string) {
   const { membership } = await requireBarbershop();
   if (membership.role !== "gestor") throw new Error("apenas gestores");
   const supabase = await createClient();
-  const { error } = await supabase.from("appointments").delete().eq("id", id);
+  const { error } = await supabase
+    .from("appointments")
+    .delete()
+    .eq("id", id)
+    .eq("barbershop_id", membership.barbershop!.id);
   if (error) throw error;
   revalidatePath("/app/agenda");
 }

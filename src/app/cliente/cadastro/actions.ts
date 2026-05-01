@@ -4,6 +4,8 @@ import { redirect } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { clientSignupSchema } from "@/lib/zod/client-signup";
+import { safeNext } from "@/lib/auth/safe-redirect";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
 type State = { error?: string; ok?: boolean };
 
@@ -11,6 +13,11 @@ export async function signupClientAction(
   _prev: State,
   formData: FormData
 ): Promise<State> {
+  const ip = await getClientIp();
+  const rl = await checkRateLimit(`signup_client:${ip}`, 5, 3600);
+  if (!rl.ok) {
+    return { error: "Muitas tentativas. Tente novamente em alguns minutos." };
+  }
   const parsed = clientSignupSchema.safeParse({
     full_name: formData.get("full_name") ?? "",
     email: formData.get("email") ?? "",
@@ -21,7 +28,7 @@ export async function signupClientAction(
     return { error: parsed.error.issues.map((i) => i.message).join("; ") };
   }
   const v = parsed.data;
-  const next = String(formData.get("next") ?? "");
+  const nextRaw = String(formData.get("next") ?? "");
 
   const admin = createAdminClient();
 
@@ -55,5 +62,5 @@ export async function signupClientAction(
 
   await supabase.rpc("fn_client_link_phone", { p_phone: v.phone });
 
-  redirect(next || "/conta");
+  redirect(safeNext(nextRaw, "/conta"));
 }

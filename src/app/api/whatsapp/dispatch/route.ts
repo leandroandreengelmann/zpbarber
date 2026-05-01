@@ -14,7 +14,7 @@ const MAX_ATTEMPTS = 5;
 
 function authorized(req: Request): boolean {
   const secret = process.env.CRON_SECRET ?? "";
-  if (!secret) return true; // dev sem secret
+  if (!secret) return process.env.NODE_ENV !== "production";
   const auth = req.headers.get("authorization") ?? "";
   return auth === `Bearer ${secret}`;
 }
