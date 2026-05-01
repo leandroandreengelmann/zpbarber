@@ -1,4 +1,4 @@
-const CACHE_VERSION = "v25";
+const CACHE_VERSION = "v26";
 const RUNTIME_CACHE = `barberramos-runtime-${CACHE_VERSION}`;
 const PRECACHE = `barberramos-precache-${CACHE_VERSION}`;
 const PRECACHE_URLS = ["/offline", "/symbol.png", "/logo.png"];

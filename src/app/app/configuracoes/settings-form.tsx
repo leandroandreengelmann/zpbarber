@@ -180,6 +180,74 @@ export function SettingsForm({
       <input type="hidden" name="gallery_json" value={JSON.stringify(gallery)} />
 
       <fieldset disabled={disabled} className="grid gap-6">
+        <div className="grid gap-3 rounded-xl border border-[var(--color-border-secondary)] bg-[var(--color-bg-secondary)] p-4">
+          <div>
+            <Label className="text-text-md font-semibold">
+              Logo da barbearia
+            </Label>
+            <p className="mt-0.5 text-text-xs text-[var(--color-text-tertiary)]">
+              Aparece na página pública e no topo da agenda. JPG, PNG, WebP ou
+              SVG até 2 MB.
+            </p>
+          </div>
+          <input type="hidden" name="logo_url" value={logoUrl} />
+          <input
+            ref={logoInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/svg+xml"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) handleLogoFile(f);
+            }}
+          />
+          <div className="flex items-center gap-4">
+            <div className="flex size-24 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[var(--color-border-secondary)] bg-[var(--color-bg-primary)]">
+              {logoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={logoUrl}
+                  alt="Logo"
+                  className="size-full object-contain"
+                />
+              ) : (
+                <CameraIcon
+                  size={32}
+                  weight="duotone"
+                  className="text-[var(--color-fg-quaternary)]"
+                />
+              )}
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                type="button"
+                disabled={disabled || logoUploading}
+                onClick={() => logoInputRef.current?.click()}
+              >
+                <CameraIcon size={20} weight="duotone" />
+                {logoUploading
+                  ? "Enviando..."
+                  : logoUrl
+                    ? "Trocar logo"
+                    : "Escolher arquivo"}
+              </Button>
+              {logoUrl && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  disabled={disabled || logoUploading}
+                  onClick={() => setLogoUrl("")}
+                  className="text-[var(--color-text-error-primary)]"
+                >
+                  <TrashIcon size={18} weight="duotone" />
+                  Remover
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+
         <div className="grid gap-4 md:grid-cols-2">
           <div className="grid gap-1.5">
             <Label htmlFor="name">Nome</Label>
@@ -233,70 +301,6 @@ export function SettingsForm({
                 />
               )}
             </div>
-          </div>
-          <div className="grid gap-1.5">
-            <Label>Logo da barbearia</Label>
-            <input type="hidden" name="logo_url" value={logoUrl} />
-            <input
-              ref={logoInputRef}
-              type="file"
-              accept="image/jpeg,image/png,image/webp,image/svg+xml"
-              className="hidden"
-              onChange={(e) => {
-                const f = e.target.files?.[0];
-                if (f) handleLogoFile(f);
-              }}
-            />
-            <div className="flex items-center gap-3">
-              <div className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-[var(--color-border-secondary)] bg-[var(--color-bg-secondary)]">
-                {logoUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={logoUrl}
-                    alt="Logo"
-                    className="size-full object-contain"
-                  />
-                ) : (
-                  <CameraIcon
-                    size={22}
-                    weight="duotone"
-                    className="text-[var(--color-fg-quaternary)]"
-                  />
-                )}
-              </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  disabled={disabled || logoUploading}
-                  onClick={() => logoInputRef.current?.click()}
-                >
-                  <CameraIcon size={18} weight="duotone" />
-                  {logoUploading
-                    ? "Enviando..."
-                    : logoUrl
-                      ? "Trocar logo"
-                      : "Enviar logo"}
-                </Button>
-                {logoUrl && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    disabled={disabled || logoUploading}
-                    onClick={() => setLogoUrl("")}
-                    className="text-[var(--color-text-error-primary)]"
-                  >
-                    <TrashIcon size={18} weight="duotone" />
-                    Remover
-                  </Button>
-                )}
-              </div>
-            </div>
-            <p className="text-text-xs text-[var(--color-text-tertiary)]">
-              JPG, PNG, WebP ou SVG até 2 MB.
-            </p>
           </div>
         </div>
 
