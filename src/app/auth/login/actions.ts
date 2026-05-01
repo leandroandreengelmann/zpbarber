@@ -21,7 +21,7 @@ export async function signInAction(formData: FormData) {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("is_super_admin")
+    .select("is_super_admin, is_client")
     .eq("id", user.id)
     .maybeSingle();
 
@@ -33,6 +33,7 @@ export async function signInAction(formData: FormData) {
     .eq("is_active", true);
 
   if (!memberships || memberships.length === 0) {
+    if (profile?.is_client) redirect("/conta");
     await supabase.auth.signOut();
     redirect("/auth/login?error=no-membership");
   }
