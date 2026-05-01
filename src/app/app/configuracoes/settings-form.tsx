@@ -55,7 +55,10 @@ export function SettingsForm({
   const [links, setLinks] = useState<ShopLink[]>(initial.links ?? []);
   const [gallery, setGallery] = useState<ShopPhoto[]>(initial.gallery ?? []);
   const [uploading, setUploading] = useState(false);
+  const [logoUrl, setLogoUrl] = useState(initial.logo_url ?? "");
+  const [logoUploading, setLogoUploading] = useState(false);
   const galleryInputRef = useRef<HTMLInputElement>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (state.ok) notify.success("Configurações salvas", { description: "As alterações foram aplicadas." });
@@ -78,6 +81,44 @@ export function SettingsForm({
   }
   function removePhoto(i: number) {
     setGallery(gallery.filter((_, idx) => idx !== i));
+  }
+
+  async function handleLogoFile(file: File) {
+    if (!file.type.startsWith("image/")) {
+      notify.error("Formato inválido", {
+        description: "Envie uma imagem JPG, PNG, WebP ou SVG.",
+      });
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      notify.error("Imagem muito grande", { description: "Máximo 2 MB." });
+      return;
+    }
+    setLogoUploading(true);
+    try {
+      const supabase = createClient();
+      const ext = file.name.split(".").pop()?.toLowerCase() ?? "png";
+      const path = `${initial.id}/logo/${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from("shop-gallery")
+        .upload(path, file, {
+          cacheControl: "3600",
+          upsert: false,
+          contentType: file.type,
+        });
+      if (upErr) {
+        notify.error("Falha no upload", { description: upErr.message });
+        return;
+      }
+      const { data } = supabase.storage.from("shop-gallery").getPublicUrl(path);
+      setLogoUrl(data.publicUrl);
+      notify.success("Logo carregado", {
+        description: "Lembre de salvar para confirmar.",
+      });
+    } finally {
+      setLogoUploading(false);
+      if (logoInputRef.current) logoInputRef.current.value = "";
+    }
   }
 
   async function handleGalleryFiles(files: FileList | null) {
@@ -194,8 +235,68 @@ export function SettingsForm({
             </div>
           </div>
           <div className="grid gap-1.5">
-            <Label htmlFor="logo_url">URL do logo</Label>
-            <Input id="logo_url" name="logo_url" defaultValue={initial.logo_url ?? ""} placeholder="https://..." />
+            <Label>Logo da barbearia</Label>
+            <input type="hidden" name="logo_url" value={logoUrl} />
+            <input
+              ref={logoInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/svg+xml"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) handleLogoFile(f);
+              }}
+            />
+            <div className="flex items-center gap-3">
+              <div className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-[var(--color-border-secondary)] bg-[var(--color-bg-secondary)]">
+                {logoUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={logoUrl}
+                    alt="Logo"
+                    className="size-full object-contain"
+                  />
+                ) : (
+                  <CameraIcon
+                    size={22}
+                    weight="duotone"
+                    className="text-[var(--color-fg-quaternary)]"
+                  />
+                )}
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={disabled || logoUploading}
+                  onClick={() => logoInputRef.current?.click()}
+                >
+                  <CameraIcon size={18} weight="duotone" />
+                  {logoUploading
+                    ? "Enviando..."
+                    : logoUrl
+                      ? "Trocar logo"
+                      : "Enviar logo"}
+                </Button>
+                {logoUrl && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    disabled={disabled || logoUploading}
+                    onClick={() => setLogoUrl("")}
+                    className="text-[var(--color-text-error-primary)]"
+                  >
+                    <TrashIcon size={18} weight="duotone" />
+                    Remover
+                  </Button>
+                )}
+              </div>
+            </div>
+            <p className="text-text-xs text-[var(--color-text-tertiary)]">
+              JPG, PNG, WebP ou SVG até 2 MB.
+            </p>
           </div>
         </div>
 
@@ -391,7 +492,10 @@ export function SettingsForm({
       </fieldset>
 
       <div className="flex justify-end">
-        <Button type="submit" disabled={pending || disabled || uploading}>
+        <Button
+          type="submit"
+          disabled={pending || disabled || uploading || logoUploading}
+        >
           <FloppyDiskIcon size={28} weight="duotone" />
           {pending ? "Salvando..." : "Salvar configurações"}
         </Button>
