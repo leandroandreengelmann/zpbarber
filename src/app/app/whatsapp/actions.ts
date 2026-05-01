@@ -167,6 +167,17 @@ export async function refreshConnectionStateAction(
   if (!s?.evolution_instance_name)
     return { error: "Nenhuma instância criada." };
 
+  // Resincroniza o webhook com o token atual (idempotente, falha silenciosa).
+  const webhook = await publicWebhookUrl();
+  if (webhook) {
+    try {
+      await setInstanceWebhook({
+        instanceName: s.evolution_instance_name,
+        webhookUrl: webhook,
+      });
+    } catch {}
+  }
+
   try {
     const info = await fetchInstance(s.evolution_instance_name);
     const state = info.instance?.state ?? "close";
