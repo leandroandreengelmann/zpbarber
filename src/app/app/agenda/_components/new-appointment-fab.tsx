@@ -20,11 +20,15 @@ import {
 import type {
   createAppointmentAction,
   createClientAction,
+  getAvailableDaysAction,
+  getAvailableSlotsAction,
 } from "../actions";
 
 export function NewAppointmentFab({
   action,
   createClientAction: createClientActionProp,
+  getAvailableSlotsAction: getAvailableSlotsActionProp,
+  getAvailableDaysAction: getAvailableDaysActionProp,
   clients,
   services,
   barbers,
@@ -34,6 +38,8 @@ export function NewAppointmentFab({
 }: {
   action: typeof createAppointmentAction;
   createClientAction: typeof createClientAction;
+  getAvailableSlotsAction: typeof getAvailableSlotsAction;
+  getAvailableDaysAction: typeof getAvailableDaysAction;
   clients: ClientOpt[];
   services: ServiceOpt[];
   barbers: BarberOpt[];
@@ -71,6 +77,8 @@ export function NewAppointmentFab({
           <AppointmentForm
             action={action}
             createClientAction={createClientActionProp}
+            getAvailableSlotsAction={getAvailableSlotsActionProp}
+            getAvailableDaysAction={getAvailableDaysActionProp}
             clients={clients}
             services={services}
             barbers={barbers}

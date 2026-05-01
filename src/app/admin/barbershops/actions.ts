@@ -173,6 +173,13 @@ export async function enterBarbershopAction(barbershopId: string) {
   redirect("/app");
 }
 
+export async function exitBarbershopAction() {
+  await requireSuperAdmin();
+  const c = await cookies();
+  c.delete(ACTIVE_TENANT_COOKIE);
+  redirect("/admin/barbershops");
+}
+
 export async function setMemberActiveAction(
   barbershopId: string,
   userId: string,

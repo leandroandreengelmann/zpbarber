@@ -758,6 +758,7 @@ export type Database = {
           notes: string | null
           phone: string | null
           updated_at: string
+          user_id: string | null
           whatsapp_optout_at: string | null
         }
         Insert: {
@@ -771,6 +772,7 @@ export type Database = {
           notes?: string | null
           phone?: string | null
           updated_at?: string
+          user_id?: string | null
           whatsapp_optout_at?: string | null
         }
         Update: {
@@ -784,6 +786,7 @@ export type Database = {
           notes?: string | null
           phone?: string | null
           updated_at?: string
+          user_id?: string | null
           whatsapp_optout_at?: string | null
         }
         Relationships: [
@@ -1648,30 +1651,30 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
-          cpf: string | null
           created_at: string
           full_name: string | null
           id: string
+          is_client: boolean
           is_super_admin: boolean
           phone: string | null
           updated_at: string
         }
         Insert: {
           avatar_url?: string | null
-          cpf?: string | null
           created_at?: string
           full_name?: string | null
           id: string
+          is_client?: boolean
           is_super_admin?: boolean
           phone?: string | null
           updated_at?: string
         }
         Update: {
           avatar_url?: string | null
-          cpf?: string | null
           created_at?: string
           full_name?: string | null
           id?: string
+          is_client?: boolean
           is_super_admin?: boolean
           phone?: string | null
           updated_at?: string
@@ -2438,6 +2441,43 @@ export type Database = {
         Returns: undefined
       }
       fn_cash_session_expected: { Args: { p_session: string }; Returns: number }
+      fn_client_cancel_appointment: {
+        Args: { p_appointment_id: string }
+        Returns: undefined
+      }
+      fn_client_link_phone: { Args: { p_phone: string }; Returns: number }
+      fn_client_my_loyalty: {
+        Args: never
+        Returns: {
+          barbershop_id: string
+          card_id: string
+          current_count: number
+          required: number
+          shop_logo_url: string
+          shop_name: string
+          shop_slug: string
+          status: Database["public"]["Enums"]["loyalty_punch_status"]
+        }[]
+      }
+      fn_client_my_appointments: {
+        Args: { p_only_upcoming?: boolean }
+        Returns: {
+          appointment_id: string
+          barber_id: string
+          barber_name: string
+          duration_minutes: number
+          notes: string
+          price_cents: number
+          scheduled_at: string
+          service_id: string
+          service_name: string
+          shop_id: string
+          shop_logo_url: string
+          shop_name: string
+          shop_slug: string
+          status: Database["public"]["Enums"]["appointment_status"]
+        }[]
+      }
       fn_commission_summary: {
         Args: {
           p_barber_id: string
@@ -2593,6 +2633,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_client: { Args: never; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }
       user_barbershop_ids: { Args: never; Returns: string[] }
     }

@@ -71,8 +71,8 @@ export function PendingBills({
 
   return (
     <>
-      <div className="rounded-xl border border-[var(--color-warning-200)] bg-[var(--color-warning-50)] p-0">
-        <div className="flex items-center justify-between border-b border-[var(--color-warning-200)] px-6 py-4">
+      <div className="rounded-xl border border-[var(--color-warning-200)] bg-[var(--color-warning-50)]">
+        <div className="flex flex-col gap-1 border-b border-[var(--color-warning-200)] px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-4">
           <div className="flex items-center gap-2">
             <CashRegisterIcon
               size={28}
@@ -94,39 +94,53 @@ export function PendingBills({
           {items.map((a) => (
             <li
               key={a.id}
-              className="flex flex-wrap items-center gap-4 px-6 py-3"
+              className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4 sm:px-6"
             >
-              <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-white text-[var(--color-blue-700)]">
-                <UserCircleIcon size={22} weight="duotone" />
-              </div>
-              <div className="grid min-w-0 flex-1 gap-0.5">
-                <span className="truncate text-text-sm font-semibold text-[var(--color-text-primary)]">
-                  {a.client_name}
-                </span>
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-text-xs text-[var(--color-text-tertiary)]">
-                  <span className="inline-flex items-center gap-1">
-                    <ClockIcon size={14} weight="duotone" />
-                    {formatTimeBR(a.scheduled_at)}
-                  </span>
-                  <span className="inline-flex items-center gap-1">
-                    <ScissorsIcon size={14} weight="duotone" />
-                    {a.service_name}
-                  </span>
-                  {a.barber_name && (
-                    <span className="inline-flex items-center gap-1">
-                      <UserSwitchIcon size={14} weight="duotone" />
-                      {a.barber_name}
-                    </span>
-                  )}
+              <div className="flex items-center gap-3 sm:contents">
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-white text-[var(--color-blue-700)]">
+                  <UserCircleIcon size={22} weight="duotone" />
                 </div>
+                <div className="grid min-w-0 flex-1 gap-1">
+                  <span className="truncate text-text-sm font-semibold text-[var(--color-text-primary)]">
+                    {a.client_name}
+                  </span>
+                  <div className="flex flex-col gap-1 text-text-xs text-[var(--color-text-tertiary)] sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-3 sm:gap-y-0.5">
+                    <span className="inline-flex items-center gap-1.5">
+                      <ClockIcon
+                        size={16}
+                        weight="duotone"
+                        className="text-[var(--color-text-secondary)]"
+                      />
+                      {formatTimeBR(a.scheduled_at)}
+                    </span>
+                    <span className="inline-flex items-center gap-1.5">
+                      <ScissorsIcon
+                        size={16}
+                        weight="duotone"
+                        className="text-[var(--color-text-secondary)]"
+                      />
+                      {a.service_name}
+                    </span>
+                    {a.barber_name && (
+                      <span className="inline-flex items-center gap-1.5">
+                        <UserSwitchIcon
+                          size={16}
+                          weight="duotone"
+                          className="text-[var(--color-text-secondary)]"
+                        />
+                        {a.barber_name}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <span className="shrink-0 tabular-nums text-text-md font-semibold text-[var(--color-text-primary)] sm:order-none">
+                  {formatMoney(a.price_cents)}
+                </span>
               </div>
-              <span className="shrink-0 tabular-nums text-text-md font-semibold text-[var(--color-text-primary)]">
-                {formatMoney(a.price_cents)}
-              </span>
               <Button
                 size="sm"
                 onClick={() => setBilling(a)}
-                className="h-9"
+                className="h-10 w-full sm:h-9 sm:w-auto"
               >
                 <CashRegisterIcon size={18} weight="duotone" />
                 Cobrar

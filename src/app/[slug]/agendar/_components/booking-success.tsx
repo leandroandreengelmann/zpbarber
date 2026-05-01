@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect } from "react";
+import Link from "next/link";
 import {
   CalendarBlankIcon,
+  CalendarCheckIcon,
   CheckCircleIcon,
   ClockIcon,
   ScissorsIcon,
@@ -19,6 +21,7 @@ type Props = {
   scheduledAt: string;
   durationMinutes: number;
   priceCents: number;
+  isClient?: boolean;
 };
 
 const WEEKDAYS = [
@@ -156,15 +159,26 @@ export function BookingSuccess(props: Props) {
           </div>
         </Card>
 
-        <a
-          href={gcalLink(props)}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-md border border-[var(--color-border-secondary)] bg-[var(--color-bg-primary)] px-5 text-text-sm font-semibold text-[var(--color-text-primary)] hover:bg-[var(--color-bg-secondary)] sm:w-auto sm:self-center"
-        >
-          <CalendarBlankIcon size={20} weight="duotone" />
-          Adicionar ao Google Calendar
-        </a>
+        <div className="grid gap-2 sm:flex sm:flex-wrap sm:justify-center">
+          <a
+            href={gcalLink(props)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-md border border-[var(--color-border-secondary)] bg-[var(--color-bg-primary)] px-5 text-text-sm font-semibold text-[var(--color-text-primary)] hover:bg-[var(--color-bg-secondary)] sm:w-auto"
+          >
+            <CalendarBlankIcon size={20} weight="duotone" />
+            Adicionar ao Google Calendar
+          </a>
+          {props.isClient && (
+            <Link
+              href="/conta"
+              className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-md bg-[var(--color-blue-600)] px-5 text-text-sm font-semibold text-white hover:bg-[var(--color-blue-700)] sm:w-auto"
+            >
+              <CalendarCheckIcon size={20} weight="duotone" />
+              Ver meus agendamentos
+            </Link>
+          )}
+        </div>
 
         <p className="flex items-center justify-center gap-2 text-text-sm text-[var(--color-text-tertiary)]">
           <WhatsappLogoIcon

@@ -10,6 +10,7 @@ import {
   ClockIcon,
   ScissorsIcon,
   UserCircleIcon,
+  UserCheckIcon,
   WarningCircleIcon,
 } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
@@ -25,6 +26,7 @@ import { BookingSuccess } from "./booking-success";
 type Props = {
   slug: string;
   data: BookingPageData;
+  currentClient: { name: string; phone: string } | null;
 };
 
 type Step = 1 | 2 | 3 | 4;
@@ -86,7 +88,7 @@ function formatTime(iso: string) {
   });
 }
 
-export function BookingWizard({ slug, data }: Props) {
+export function BookingWizard({ slug, data, currentClient }: Props) {
   const [step, setStep] = useState<Step>(1);
   const [barberId, setBarberId] = useState<string | null>(null);
   const [serviceId, setServiceId] = useState<string | null>(null);
@@ -94,7 +96,7 @@ export function BookingWizard({ slug, data }: Props) {
   const [slot, setSlot] = useState<string | null>(null);
   const [slots, setSlots] = useState<string[]>([]);
   const [loadingSlots, startSlotsTransition] = useTransition();
-  const [phone, setPhone] = useState("");
+  const [phone, setPhone] = useState(currentClient?.phone ?? "");
 
   const [state, formAction, pending] = useActionState(
     createPublicAppointmentAction,
@@ -167,6 +169,7 @@ export function BookingWizard({ slug, data }: Props) {
         scheduledAt={state.scheduledAt}
         durationMinutes={state.durationMinutes ?? 0}
         priceCents={state.priceCents ?? 0}
+        isClient={!!currentClient}
       />
     );
   }
@@ -315,6 +318,10 @@ export function BookingWizard({ slug, data }: Props) {
                 Próximos 14 dias
               </span>
             </div>
+            <p className="text-text-xs text-[var(--color-text-tertiary)]">
+              Essas são as datas em que o profissional atende. Toque em um dia
+              para ver os horários.
+            </p>
             <div className="flex gap-2 overflow-x-auto px-0.5 py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 {dates.map((d) => {
                   const selected = !!date && isSameDay(d, date);
@@ -460,6 +467,16 @@ export function BookingWizard({ slug, data }: Props) {
             </ul>
           </div>
 
+          {currentClient && (
+            <div className="flex items-start gap-2 rounded-lg border border-[var(--color-border-success-subtle)] bg-[var(--color-success-25)] px-3 py-2.5 text-text-sm text-[var(--color-text-success-primary)]">
+              <UserCheckIcon size={28} weight="duotone" className="mt-0.5 shrink-0" />
+              <span>
+                Logado como{" "}
+                <strong>{currentClient.name || "cliente"}</strong>. Este agendamento ficará no seu painel.
+              </span>
+            </div>
+          )}
+
           <div className="grid gap-1.5">
             <Label htmlFor="client_name">Seu nome</Label>
             <Input
@@ -470,6 +487,7 @@ export function BookingWizard({ slug, data }: Props) {
               maxLength={120}
               placeholder="João da Silva"
               autoComplete="name"
+              defaultValue={currentClient?.name ?? ""}
             />
           </div>
 

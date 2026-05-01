@@ -1,7 +1,9 @@
 import Link from "next/link";
 import {
+  ArrowSquareOutIcon,
   PencilSimpleIcon,
   PlusIcon,
+  SignInIcon,
   StorefrontIcon,
   WarningCircleIcon,
 } from "@phosphor-icons/react/dist/ssr";
@@ -18,6 +20,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatDateBR } from "@/lib/format";
+import { enterBarbershopAction } from "./actions";
 
 const STATUS_LABEL: Record<string, string> = {
   trial: "Trial",
@@ -95,47 +98,78 @@ export default async function BarbershopsPage() {
           <ul className="grid gap-3 sm:hidden">
             {items.map((b) => (
               <li key={b.id}>
-                <Link href={`/admin/barbershops/${b.id}`} className="block">
-                  <Card className="p-4">
-                    <div className="flex items-start gap-3">
-                      <div className="flex size-11 shrink-0 items-center justify-center rounded-xl border border-[var(--color-border-secondary)] bg-[var(--color-bg-primary)] text-[var(--color-fg-secondary)]">
-                        <StorefrontIcon size={28} weight="duotone" />
-                      </div>
-                      <div className="grid flex-1 gap-1 min-w-0">
-                        <span className="truncate text-text-md font-semibold text-[var(--color-text-primary)]">
-                          {b.name}
-                        </span>
-                        <span className="font-mono text-text-xs text-[var(--color-text-tertiary)]">
-                          {b.slug}
-                        </span>
-                        <Badge
-                          variant={STATUS_VARIANT[b.status] ?? "outline"}
-                          className="w-fit"
-                        >
-                          {STATUS_LABEL[b.status] ?? b.status}
-                        </Badge>
-                      </div>
+                <Card className="p-4">
+                  <Link href={`/admin/barbershops/${b.id}`} className="flex items-start gap-3">
+                    <div className="flex size-11 shrink-0 items-center justify-center rounded-xl border border-[var(--color-border-secondary)] bg-[var(--color-bg-primary)] text-[var(--color-fg-secondary)]">
+                      <StorefrontIcon size={28} weight="duotone" />
                     </div>
-                    <div className="mt-3 grid grid-cols-2 gap-3 border-t border-[var(--color-border-secondary)] pt-3 text-text-xs">
-                      <div className="grid gap-0.5">
-                        <span className="uppercase tracking-wide text-[var(--color-text-tertiary)]">
-                          Trial até
-                        </span>
-                        <span className="text-[var(--color-text-secondary)]">
-                          {b.trial_ends_at ? formatDateBR(b.trial_ends_at) : "—"}
-                        </span>
-                      </div>
-                      <div className="grid gap-0.5">
-                        <span className="uppercase tracking-wide text-[var(--color-text-tertiary)]">
-                          Criada em
-                        </span>
-                        <span className="text-[var(--color-text-secondary)]">
-                          {formatDateBR(b.created_at)}
-                        </span>
-                      </div>
+                    <div className="grid flex-1 gap-1 min-w-0">
+                      <span className="truncate text-text-md font-semibold text-[var(--color-text-primary)]">
+                        {b.name}
+                      </span>
+                      <span className="font-mono text-text-xs text-[var(--color-text-tertiary)]">
+                        {b.slug}
+                      </span>
+                      <Badge
+                        variant={STATUS_VARIANT[b.status] ?? "outline"}
+                        className="w-fit"
+                      >
+                        {STATUS_LABEL[b.status] ?? b.status}
+                      </Badge>
                     </div>
-                  </Card>
-                </Link>
+                  </Link>
+                  <div className="mt-3 grid grid-cols-2 gap-3 border-t border-[var(--color-border-secondary)] pt-3 text-text-xs">
+                    <div className="grid gap-0.5">
+                      <span className="uppercase tracking-wide text-[var(--color-text-tertiary)]">
+                        Trial até
+                      </span>
+                      <span className="text-[var(--color-text-secondary)]">
+                        {b.trial_ends_at ? formatDateBR(b.trial_ends_at) : "—"}
+                      </span>
+                    </div>
+                    <div className="grid gap-0.5">
+                      <span className="uppercase tracking-wide text-[var(--color-text-tertiary)]">
+                        Criada em
+                      </span>
+                      <span className="text-[var(--color-text-secondary)]">
+                        {formatDateBR(b.created_at)}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-2 border-t border-[var(--color-border-secondary)] pt-3">
+                    <form action={enterBarbershopAction.bind(null, b.id)}>
+                      <button
+                        type="submit"
+                        title="Entrar no painel"
+                        aria-label="Entrar no painel"
+                        className={buttonVariants({ variant: "outline", size: "sm" })}
+                      >
+                        <SignInIcon size={20} weight="duotone" />
+                        Entrar
+                      </button>
+                    </form>
+                    <Link
+                      href={`/${b.slug}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="Ver página pública"
+                      aria-label="Ver página pública"
+                      className={buttonVariants({ variant: "outline", size: "sm" })}
+                    >
+                      <ArrowSquareOutIcon size={20} weight="duotone" />
+                      Pública
+                    </Link>
+                    <Link
+                      href={`/admin/barbershops/${b.id}`}
+                      title="Editar"
+                      aria-label="Editar"
+                      className={buttonVariants({ variant: "outline", size: "sm" })}
+                    >
+                      <PencilSimpleIcon size={20} weight="duotone" />
+                      Editar
+                    </Link>
+                  </div>
+                </Card>
               </li>
             ))}
           </ul>
@@ -191,13 +225,36 @@ export default async function BarbershopsPage() {
                     {formatDateBR(b.created_at)}
                   </TableCell>
                   <TableCell className="px-4 py-4 pr-6 text-right">
-                    <Link
-                      href={`/admin/barbershops/${b.id}`}
-                      className={buttonVariants({ variant: "ghost", size: "sm" })}
-                    >
-                      <PencilSimpleIcon size={28} weight="duotone" />
-                      Editar
-                    </Link>
+                    <div className="inline-flex items-center gap-1">
+                      <form action={enterBarbershopAction.bind(null, b.id)}>
+                        <button
+                          type="submit"
+                          title="Entrar no painel"
+                          aria-label="Entrar no painel"
+                          className={buttonVariants({ variant: "ghost", size: "sm" })}
+                        >
+                          <SignInIcon size={20} weight="duotone" />
+                        </button>
+                      </form>
+                      <Link
+                        href={`/${b.slug}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title="Ver página pública"
+                        aria-label="Ver página pública"
+                        className={buttonVariants({ variant: "ghost", size: "sm" })}
+                      >
+                        <ArrowSquareOutIcon size={20} weight="duotone" />
+                      </Link>
+                      <Link
+                        href={`/admin/barbershops/${b.id}`}
+                        title="Editar"
+                        aria-label="Editar"
+                        className={buttonVariants({ variant: "ghost", size: "sm" })}
+                      >
+                        <PencilSimpleIcon size={20} weight="duotone" />
+                      </Link>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}

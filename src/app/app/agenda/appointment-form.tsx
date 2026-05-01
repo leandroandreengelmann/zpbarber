@@ -9,7 +9,6 @@ import {
 } from "@phosphor-icons/react";
 import { notify } from "@/components/ui/toast";
 import { Button } from "@/components/ui/button";
-import { DateTimePicker } from "@/components/ui/datetime-picker";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -20,7 +19,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ClientPicker } from "./client-picker";
-import type { createClientAction } from "./actions";
+import { SlotPicker } from "./slot-picker";
+import type {
+  createClientAction,
+  getAvailableDaysAction,
+  getAvailableSlotsAction,
+} from "./actions";
 
 type State = { error?: string; ok?: boolean };
 
@@ -79,6 +83,9 @@ export function AppointmentForm({
   submitLabel,
   lockedBarberId,
   createClientAction: createClientActionProp,
+  getAvailableSlotsAction: getAvailableSlotsActionProp,
+  getAvailableDaysAction: getAvailableDaysActionProp,
+  initialAppointmentId,
 }: {
   action: (prev: State, fd: FormData) => Promise<State>;
   clients: ClientOpt[];
@@ -91,6 +98,9 @@ export function AppointmentForm({
   submitLabel?: string;
   lockedBarberId?: string;
   createClientAction: typeof createClientAction;
+  getAvailableSlotsAction: typeof getAvailableSlotsAction;
+  getAvailableDaysAction: typeof getAvailableDaysAction;
+  initialAppointmentId?: string;
 }) {
   const [state, formAction, pending] = useActionState<State, FormData>(action, {});
   const [barberId, setBarberId] = useState<string>(
@@ -104,6 +114,7 @@ export function AppointmentForm({
   const [price, setPrice] = useState<string>(
     initial ? formatCents(initial.price_cents) : ""
   );
+  const [scheduledAt, setScheduledAt] = useState<string>("");
 
   const linksByBarber = useMemo(() => {
     const map = new Map<string, Map<string, BarberServiceLink>>();
@@ -195,16 +206,11 @@ export function AppointmentForm({
     ? toLocalInputValue(new Date(initial.scheduled_at))
     : null;
   const isPastDate = !!defaultDate && defaultDate < todayLocal;
-  const isToday = !!defaultDate && defaultDate === todayLocal;
   const baseDate = isPastDate ? todayLocal : (defaultDate ?? todayLocal);
-  const defaultStart =
-    initialStart ??
-    (isToday
-      ? toLocalInputValue(now)
-      : defaultDate && !isPastDate
-        ? `${baseDate}T09:00`
-        : toLocalInputValue(now));
-  const minStart = initial ? "" : toLocalInputValue(now);
+
+  useEffect(() => {
+    if (initialStart) setScheduledAt(initialStart);
+  }, [initialStart]);
 
   return (
     <form action={formAction} className="grid gap-5">
@@ -288,18 +294,25 @@ export function AppointmentForm({
         />
       </div>
 
-      <div className="grid gap-5">
-        <div className="grid gap-1.5">
-          <Label htmlFor="scheduled_at">Início</Label>
-          <DateTimePicker
-            id="scheduled_at"
-            name="scheduled_at"
-            defaultValue={defaultStart}
-            min={minStart || undefined}
-            required
-            stepMinutes={duration}
-          />
-        </div>
+      <div className="grid gap-1.5">
+        <Label htmlFor="scheduled_at">Início</Label>
+        <input type="hidden" name="scheduled_at" value={scheduledAt} />
+        <SlotPicker
+          value={scheduledAt}
+          onChange={setScheduledAt}
+          barberId={barberId}
+          serviceId={serviceId}
+          baseDate={baseDate}
+          excludeAppointmentId={initialAppointmentId}
+          fetchSlots={getAvailableSlotsActionProp}
+          fetchDays={getAvailableDaysActionProp}
+          disabled={!barberId || !serviceId}
+        />
+        {(!barberId || !serviceId) && (
+          <span className="text-text-xs text-[var(--color-text-tertiary)]">
+            Selecione barbeiro e serviço para ver os horários.
+          </span>
+        )}
       </div>
 
       <input type="hidden" name="duration_minutes" value={duration} />
@@ -343,7 +356,11 @@ export function AppointmentForm({
       </div>
 
       <div className="sticky bottom-[-1rem] -mx-4 -mb-1 flex justify-end border-t border-[var(--color-border-secondary)] bg-popover px-4 pb-2 pt-3 sm:static sm:m-0 sm:border-0 sm:bg-transparent sm:p-0">
-        <Button type="submit" disabled={pending} className="h-11 w-full sm:w-auto">
+        <Button
+          type="submit"
+          disabled={pending || !scheduledAt || !clientId || !serviceId}
+          className="h-11 w-full sm:w-auto"
+        >
           <FloppyDiskIcon size={28} weight="duotone" />
           {pending ? "Salvando..." : (submitLabel ?? "Agendar")}
         </Button>

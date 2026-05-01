@@ -10,6 +10,13 @@ export async function requireUser() {
   return user;
 }
 
+export async function requireClient() {
+  const user = await getCurrentUser();
+  if (!user) redirect("/cliente/login");
+  if (!user.profile.is_client) redirect("/");
+  return user;
+}
+
 export async function requireSuperAdmin() {
   const user = await requireUser();
   if (!user.profile.is_super_admin) redirect("/app");

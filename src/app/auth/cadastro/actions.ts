@@ -59,7 +59,8 @@ export async function signupBarbershopAction(
     const { data: cpfTaken } = await admin
       .from("profiles")
       .select("id")
-      .eq("cpf", v.tax_value)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .eq("cpf" as any, v.tax_value)
       .maybeSingle();
     if (cpfTaken) {
       return { error: "Esse CPF já está cadastrado." };
@@ -89,7 +90,8 @@ export async function signupBarbershopAction(
   if (v.tax_type === "cpf") {
     const { error: cpfErr } = await admin
       .from("profiles")
-      .update({ cpf: v.tax_value })
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .update({ cpf: v.tax_value } as any)
       .eq("id", userId);
     if (cpfErr) {
       try {

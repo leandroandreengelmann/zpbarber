@@ -29,10 +29,15 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
 
 export const getCurrentMemberships = cache(async () => {
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return [];
   const { data, error } = await supabase
     .from("barbershop_members")
     .select("role, is_active, barbershop:barbershops(id, slug, name, primary_color, status)")
-    .eq("is_active", true);
+    .eq("is_active", true)
+    .eq("user_id", user.id);
   if (error) throw error;
   return data ?? [];
 });

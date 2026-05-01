@@ -43,7 +43,11 @@ import {
   setAppointmentStatusAction,
   updateAppointmentAction,
 } from "../actions";
-import type { createClientAction } from "../actions";
+import type {
+  createClientAction,
+  getAvailableDaysAction,
+  getAvailableSlotsAction,
+} from "../actions";
 import {
   AppointmentForm,
   type BarberOpt,
@@ -75,6 +79,8 @@ export function AppointmentMenu({
   barberServices,
   lockedBarberId,
   createClientAction: createClientActionProp,
+  getAvailableSlotsAction: getAvailableSlotsActionProp,
+  getAvailableDaysAction: getAvailableDaysActionProp,
   children,
 }: {
   appt: DayAppt;
@@ -87,6 +93,8 @@ export function AppointmentMenu({
   barberServices: BarberServiceLink[];
   lockedBarberId?: string;
   createClientAction: typeof createClientAction;
+  getAvailableSlotsAction: typeof getAvailableSlotsAction;
+  getAvailableDaysAction: typeof getAvailableDaysAction;
   children: React.ReactNode;
 }) {
   const isMobile = useIsMobile();
@@ -392,6 +400,8 @@ export function AppointmentMenu({
           <AppointmentForm
             action={editAction}
             createClientAction={createClientActionProp}
+            getAvailableSlotsAction={getAvailableSlotsActionProp}
+            getAvailableDaysAction={getAvailableDaysActionProp}
             clients={formClients}
             services={formServices}
             barbers={barbers}
@@ -406,6 +416,7 @@ export function AppointmentMenu({
               price_cents: appt.price_cents ?? 0,
               notes: null,
             }}
+            initialAppointmentId={appt.id}
             submitLabel="Salvar alterações"
             onSuccess={() => setEditOpen(false)}
           />

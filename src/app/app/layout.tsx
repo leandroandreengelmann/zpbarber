@@ -5,8 +5,10 @@ import { redirect } from "next/navigation";
 import { ClockClockwiseIcon, WarningCircleIcon } from "@phosphor-icons/react/dist/ssr";
 import { AppShell } from "@/components/shell/app-shell";
 import { requireBarbershop } from "@/lib/auth/guards";
+import { getCurrentMemberships } from "@/lib/auth/current-user";
 import { getBarbershopBillingState } from "@/lib/billing/access";
 import type { NavItem, NavSection } from "@/components/shell/sidebar-nav";
+import { ImpersonationBanner } from "./_components/impersonation-banner";
 
 type RoleNavItem = NavItem & { gestorOnly?: boolean };
 type RoleNavSection = { title?: string; items: RoleNavItem[] };
@@ -52,6 +54,7 @@ const SECTIONS: RoleNavSection[] = [
     items: [
       { href: "/app/financeiro", label: "Financeiro", icon: "currencyDollar" },
       { href: "/app/comissoes", label: "Comissões", icon: "chartBar", gestorOnly: true },
+      { href: "/app/logs", label: "Logs", icon: "shieldCheck", gestorOnly: true },
       { href: "/app/configuracoes", label: "Configurações", icon: "gear" },
     ],
   },
@@ -73,6 +76,11 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
   const { user, membership } = await requireBarbershop();
   const shop = membership.barbershop!;
   const isGestor = membership.role === "gestor";
+
+  const memberships = await getCurrentMemberships();
+  const isImpersonating =
+    user.profile.is_super_admin &&
+    !memberships.some((m) => m.barbershop?.id === shop.id);
 
   const billing = await getBarbershopBillingState(shop.id);
   const hdrs = await headers();
@@ -118,6 +126,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
       topbarSubtitle={ROLE_LABEL[membership.role] ?? membership.role}
       email={user.email}
     >
+      {isImpersonating && <ImpersonationBanner shopName={shop.name} />}
       {showTrialEnding && (
         <div className="mb-4 flex flex-wrap items-start justify-between gap-3 rounded-xl border border-[var(--color-border-secondary)] bg-[var(--color-bg-secondary)] px-4 py-3">
           <div className="flex items-start gap-3">

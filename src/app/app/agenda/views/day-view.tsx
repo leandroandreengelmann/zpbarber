@@ -7,11 +7,10 @@ import { formatTimeBR, formatMoney } from "@/lib/format";
 import {
   HOUR_END,
   HOUR_START,
-  SLOT_MINUTES,
   localTimeParts,
   todayLocalISO,
 } from "../_lib/calendar";
-import { layoutOverlaps } from "../_lib/layout";
+import { computeHourBuckets } from "../_lib/layout";
 import type { AppointmentStatus } from "@/lib/zod/agenda";
 import { AppointmentMenu } from "../_components/appointment-menu";
 import type {
@@ -20,7 +19,11 @@ import type {
   ClientOpt,
   ServiceOpt,
 } from "../appointment-form";
-import type { createClientAction } from "../actions";
+import type {
+  createClientAction,
+  getAvailableDaysAction,
+  getAvailableSlotsAction,
+} from "../actions";
 import type {
   SaleClient,
   SaleProduct,
@@ -73,6 +76,10 @@ const STATUS_OPACITY: Record<AppointmentStatus, string> = {
 };
 
 const PX_PER_MINUTE = 1.2;
+const HOUR_BASE_HEIGHT = 60 * PX_PER_MINUTE;
+const STACKED_CHIP_HEIGHT = 36;
+const STACKED_CHIP_GAP = 3;
+const HOUR_PAD_Y = 3;
 
 function buildHours() {
   const hours: number[] = [];
@@ -92,6 +99,8 @@ export function DayView({
   barberServices,
   lockedBarberId,
   createClientAction: createClientActionProp,
+  getAvailableSlotsAction: getAvailableSlotsActionProp,
+  getAvailableDaysAction: getAvailableDaysActionProp,
 }: {
   items: DayAppt[];
   date: string;
@@ -104,16 +113,53 @@ export function DayView({
   barberServices: BarberServiceLink[];
   lockedBarberId?: string;
   createClientAction: typeof createClientAction;
+  getAvailableSlotsAction: typeof getAvailableSlotsAction;
+  getAvailableDaysAction: typeof getAvailableDaysAction;
 }) {
   const hours = buildHours();
-  const totalMinutes = (HOUR_END - HOUR_START + 1) * 60;
-  const totalHeight = totalMinutes * PX_PER_MINUTE;
   const today = todayLocalISO();
   const isPastDay = date < today;
   const isToday = date === today;
   const now = new Date();
   const nowMinutes = now.getHours() * 60 + now.getMinutes();
-  const nowOffset = (nowMinutes - HOUR_START * 60) * PX_PER_MINUTE;
+
+  const buckets = computeHourBuckets(items);
+  const bucketByHour = new Map(buckets.map((b) => [b.hour, b]));
+
+  function getHourHeight(h: number): number {
+    const b = bucketByHour.get(h);
+    if (!b) return HOUR_BASE_HEIGHT;
+    if (b.mode === "stacked") {
+      const stackedH =
+        b.items.length * (STACKED_CHIP_HEIGHT + STACKED_CHIP_GAP) -
+        STACKED_CHIP_GAP +
+        HOUR_PAD_Y * 2;
+      return Math.max(HOUR_BASE_HEIGHT, stackedH);
+    }
+    return HOUR_BASE_HEIGHT;
+  }
+
+  const hourHeights = new Map(hours.map((h) => [h, getHourHeight(h)]));
+  const totalHeight = hours.reduce((s, h) => s + hourHeights.get(h)!, 0);
+
+  function timeToY(min: number) {
+    let y = 0;
+    for (const h of hours) {
+      const hStart = h * 60;
+      const hEnd = hStart + 60;
+      const hh = hourHeights.get(h)!;
+      if (min >= hEnd) {
+        y += hh;
+        continue;
+      }
+      if (min < hStart) return y;
+      y += ((min - hStart) / 60) * hh;
+      return y;
+    }
+    return y;
+  }
+
+  const nowOffset = timeToY(nowMinutes);
 
   return (
     <div className="overflow-x-auto">
@@ -129,7 +175,7 @@ export function DayView({
             <div
               key={h}
               className="relative text-text-xs font-medium text-[var(--color-text-tertiary)]"
-              style={{ height: 60 * PX_PER_MINUTE }}
+              style={{ height: hourHeights.get(h)! }}
             >
               <span className="absolute -top-2 right-2 tabular-nums">
                 {String(h).padStart(2, "0")}:00
@@ -141,16 +187,131 @@ export function DayView({
         <div className="relative">
           {hours.map((h) => {
             const slotPast = isPastDay || (isToday && h < now.getHours());
+            const hh = hourHeights.get(h)!;
+            const bucket = bucketByHour.get(h);
             return (
               <div
                 key={h}
-                className={`border-b border-[var(--color-border-secondary)] ${
+                className={`relative border-b border-[var(--color-border-secondary)] ${
                   slotPast
                     ? "bg-[var(--color-bg-secondary)]/40 [background-image:repeating-linear-gradient(135deg,transparent_0,transparent_8px,rgba(10,13,18,0.03)_8px,rgba(10,13,18,0.03)_9px)]"
                     : "bg-[var(--color-bg-primary)]"
                 }`}
-                style={{ height: 60 * PX_PER_MINUTE }}
-              />
+                style={{ height: hh }}
+              >
+                {bucket?.mode === "lanes" &&
+                  bucket.items.map(({ appt: a, lane }) => {
+                    const { totalMinutes: startMin } = localTimeParts(
+                      a.scheduled_at
+                    );
+                    const top = ((startMin - h * 60) / 60) * hh;
+                    const widthPct = 100 / bucket.totalLanes;
+                    const leftPct = widthPct * lane;
+                    return (
+                      <div
+                        key={a.id}
+                        className="absolute"
+                        style={{
+                          top,
+                          height: STACKED_CHIP_HEIGHT,
+                          left: `calc(${leftPct}% + 8px)`,
+                          width: `calc(${widthPct}% - ${bucket.totalLanes > 1 ? 4 : 16}px)`,
+                        }}
+                      >
+                        <AppointmentMenu
+                          appt={a}
+                          clients={clients}
+                          services={services}
+                          products={products}
+                          formClients={formClients}
+                          formServices={formServices}
+                          barbers={barbers}
+                          barberServices={barberServices}
+                          lockedBarberId={lockedBarberId}
+                          createClientAction={createClientActionProp}
+                          getAvailableSlotsAction={getAvailableSlotsActionProp}
+                          getAvailableDaysAction={getAvailableDaysActionProp}
+                        >
+                          <div
+                            className={`flex h-full w-full items-center gap-1.5 overflow-hidden rounded-md border px-2 py-1 shadow-[0_1px_2px_rgb(10_13_18_/_0.08)] transition-colors ${STATUS_SOLID[a.status]} ${STATUS_OPACITY[a.status]}`}
+                          >
+                            {a.needs_billing && (
+                              <CashRegisterIcon
+                                size={18}
+                                weight="duotone"
+                                className="shrink-0"
+                              />
+                            )}
+                            <span className="shrink-0 text-text-xs font-semibold tabular-nums">
+                              {formatTimeBR(a.scheduled_at)}
+                            </span>
+                            <span className="min-w-0 flex-1 truncate text-text-xs font-medium">
+                              {a.client?.full_name ?? "—"}
+                            </span>
+                            <span className="shrink-0 text-text-xs tabular-nums text-white/85">
+                              {formatMoney(a.price_cents)}
+                            </span>
+                          </div>
+                        </AppointmentMenu>
+                      </div>
+                    );
+                  })}
+
+                {bucket?.mode === "stacked" &&
+                  bucket.items.map(({ appt: a, stackIndex }) => {
+                    const top =
+                      HOUR_PAD_Y +
+                      stackIndex * (STACKED_CHIP_HEIGHT + STACKED_CHIP_GAP);
+                    return (
+                      <div
+                        key={a.id}
+                        className="absolute"
+                        style={{
+                          top,
+                          height: STACKED_CHIP_HEIGHT,
+                          left: 8,
+                          right: 8,
+                        }}
+                      >
+                        <AppointmentMenu
+                          appt={a}
+                          clients={clients}
+                          services={services}
+                          products={products}
+                          formClients={formClients}
+                          formServices={formServices}
+                          barbers={barbers}
+                          barberServices={barberServices}
+                          lockedBarberId={lockedBarberId}
+                          createClientAction={createClientActionProp}
+                          getAvailableSlotsAction={getAvailableSlotsActionProp}
+                          getAvailableDaysAction={getAvailableDaysActionProp}
+                        >
+                          <div
+                            className={`flex h-full w-full items-center gap-1.5 overflow-hidden rounded-md border px-2 py-1 shadow-[0_1px_2px_rgb(10_13_18_/_0.08)] transition-colors ${STATUS_SOLID[a.status]} ${STATUS_OPACITY[a.status]}`}
+                          >
+                            {a.needs_billing && (
+                              <CashRegisterIcon
+                                size={18}
+                                weight="duotone"
+                                className="shrink-0"
+                              />
+                            )}
+                            <span className="shrink-0 text-text-xs font-semibold tabular-nums">
+                              {formatTimeBR(a.scheduled_at)}
+                            </span>
+                            <span className="min-w-0 flex-1 truncate text-text-xs font-medium">
+                              {a.client?.full_name ?? "—"}
+                            </span>
+                            <span className="shrink-0 text-text-xs tabular-nums text-white/85">
+                              {formatMoney(a.price_cents)}
+                            </span>
+                          </div>
+                        </AppointmentMenu>
+                      </div>
+                    );
+                  })}
+              </div>
             );
           })}
 
@@ -162,61 +323,6 @@ export function DayView({
               <span className="absolute -left-1 -top-1 size-2 rounded-full bg-[var(--color-error-500)]" />
             </div>
           )}
-
-          {layoutOverlaps(items).map(({ appt: a, lane, total }) => {
-            const { totalMinutes: startMin } = localTimeParts(a.scheduled_at);
-            const offsetTop = (startMin - HOUR_START * 60) * PX_PER_MINUTE;
-            const height = Math.max(
-              SLOT_MINUTES * PX_PER_MINUTE,
-              a.duration_minutes * PX_PER_MINUTE - 2
-            );
-            if (offsetTop < 0 || offsetTop > totalHeight) return null;
-            const widthPct = 100 / total;
-            const leftPct = widthPct * lane;
-            return (
-              <div
-                key={a.id}
-                className="absolute"
-                style={{
-                  top: offsetTop,
-                  height,
-                  left: `calc(${leftPct}% + 8px)`,
-                  width: `calc(${widthPct}% - ${total > 1 ? 4 : 16}px)`,
-                }}
-              >
-                <AppointmentMenu
-                  appt={a}
-                  clients={clients}
-                  services={services}
-                  products={products}
-                  formClients={formClients}
-                  formServices={formServices}
-                  barbers={barbers}
-                  barberServices={barberServices}
-                  lockedBarberId={lockedBarberId}
-                  createClientAction={createClientActionProp}
-                >
-                  <div
-                    className={`flex h-full w-full items-center overflow-hidden rounded-lg border px-3 py-2 shadow-[0_1px_2px_rgb(10_13_18_/_0.08)] transition-colors ${STATUS_SOLID[a.status]} ${STATUS_OPACITY[a.status]}`}
-                  >
-                    <span className="inline-flex min-w-0 flex-1 items-center gap-1 truncate text-text-sm font-semibold">
-                      {a.needs_billing && (
-                        <CashRegisterIcon
-                          size={14}
-                          weight="duotone"
-                          className="shrink-0"
-                        />
-                      )}
-                      {formatTimeBR(a.scheduled_at)} · {a.client?.full_name ?? "—"}
-                    </span>
-                    <span className="shrink-0 text-text-xs tabular-nums text-white/85">
-                      {formatMoney(a.price_cents)}
-                    </span>
-                  </div>
-                </AppointmentMenu>
-              </div>
-            );
-          })}
         </div>
       </div>
       <span className="sr-only">{date}</span>

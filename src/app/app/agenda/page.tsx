@@ -25,6 +25,8 @@ import { formatMoney } from "@/lib/format";
 import {
   createAppointmentAction,
   createClientAction,
+  getAvailableDaysAction,
+  getAvailableSlotsAction,
 } from "./actions";
 import {
   AppointmentForm,
@@ -274,6 +276,8 @@ export default async function AgendaPage({
               <AppointmentForm
                 action={createAppointmentAction}
                 createClientAction={createClientAction}
+                getAvailableSlotsAction={getAvailableSlotsAction}
+                getAvailableDaysAction={getAvailableDaysAction}
                 clients={clientOpts}
                 services={serviceOpts}
                 barbers={barbers}
@@ -293,6 +297,8 @@ export default async function AgendaPage({
       <NewAppointmentFab
         action={createAppointmentAction}
         createClientAction={createClientAction}
+        getAvailableSlotsAction={getAvailableSlotsAction}
+        getAvailableDaysAction={getAvailableDaysAction}
         clients={clientOpts}
         services={serviceOpts}
         barbers={barbers}
@@ -394,6 +400,8 @@ export default async function AgendaPage({
               barberServices={barberServiceLinks}
               lockedBarberId={isBarberRole ? user.id : undefined}
               createClientAction={createClientAction}
+              getAvailableSlotsAction={getAvailableSlotsAction}
+              getAvailableDaysAction={getAvailableDaysAction}
             />
           ) : view === "week" ? (
             <WeekView items={items} date={date} />
