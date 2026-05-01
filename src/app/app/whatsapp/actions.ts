@@ -14,6 +14,7 @@ import {
   logoutInstance,
   normalizeBrazilNumber,
   sendText,
+  setInstanceWebhook,
 } from "@/lib/evolution/client";
 import {
   sendManualMessageSchema,
@@ -114,7 +115,12 @@ export async function connectInstanceAction(
         .eq("barbershop_id", c.shopId);
       return { error: msg };
     }
-    // já existia: tenta connect/QR
+    // já existia: garante que o webhook está com o token atualizado e busca QR
+    if (webhook) {
+      try {
+        await setInstanceWebhook({ instanceName, webhookUrl: webhook });
+      } catch {}
+    }
     try {
       const qr = await fetchQRCode(instanceName);
       qrBase64 = qr.base64;

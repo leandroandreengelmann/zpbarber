@@ -74,6 +74,7 @@ export async function createInstance(params: {
   instanceName: string;
   webhookUrl?: string;
 }): Promise<CreateInstanceResponse> {
+  const webhookToken = process.env.EVOLUTION_WEBHOOK_TOKEN ?? "";
   return call<CreateInstanceResponse>("/instance/create", {
     method: "POST",
     body: JSON.stringify({
@@ -93,9 +94,40 @@ export async function createInstance(params: {
                 "MESSAGES_UPDATE",
                 "SEND_MESSAGE",
               ],
+              ...(webhookToken
+                ? { headers: { "x-evolution-token": webhookToken } }
+                : {}),
             },
           }
         : {}),
+    }),
+  });
+}
+
+export async function setInstanceWebhook(params: {
+  instanceName: string;
+  webhookUrl: string;
+}): Promise<void> {
+  const webhookToken = process.env.EVOLUTION_WEBHOOK_TOKEN ?? "";
+  await call(`/webhook/set/${encodeURIComponent(params.instanceName)}`, {
+    method: "POST",
+    body: JSON.stringify({
+      webhook: {
+        enabled: true,
+        url: params.webhookUrl,
+        byEvents: false,
+        base64: false,
+        events: [
+          "QRCODE_UPDATED",
+          "CONNECTION_UPDATE",
+          "MESSAGES_UPSERT",
+          "MESSAGES_UPDATE",
+          "SEND_MESSAGE",
+        ],
+        ...(webhookToken
+          ? { headers: { "x-evolution-token": webhookToken } }
+          : {}),
+      },
     }),
   });
 }
