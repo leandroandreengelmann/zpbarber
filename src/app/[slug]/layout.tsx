@@ -26,11 +26,16 @@ export default async function PublicShopLayout({
   if (RESERVED.has(slug)) notFound();
 
   const supabase = await createClient();
-  const { data: shop } = await supabase
-    .from("barbershops")
-    .select("id, slug, name, primary_color, logo_url")
-    .eq("slug", slug)
-    .maybeSingle();
+  const { data } = await supabase.rpc("fn_public_shop_meta", { p_slug: slug });
+  const shop = data as
+    | {
+        id: string;
+        slug: string;
+        name: string;
+        primary_color: string | null;
+        logo_url: string | null;
+      }
+    | null;
 
   if (!shop) notFound();
 

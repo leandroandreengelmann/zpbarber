@@ -74,46 +74,36 @@ export default async function PublicShopPage({
 }) {
   const { slug } = await params;
   const supabase = await createClient();
-  const { data: shop } = await supabase
-    .from("barbershops")
-    .select(
-      "id, name, phone, email, address, public_booking_enabled, primary_color, logo_url"
-    )
-    .eq("slug", slug)
-    .maybeSingle();
+  const { data } = await supabase.rpc("fn_public_booking_data", { p_slug: slug });
+  const payload = data as
+    | {
+        shop: {
+          id: string;
+          name: string;
+          phone: string | null;
+          email: string | null;
+          address: Address | null;
+          primary_color: string | null;
+          public_booking_enabled: boolean;
+          is_open: boolean;
+        };
+        services: { id: string; name: string; duration_minutes: number; price_cents: number }[];
+        barbers: { id: string; full_name: string | null; avatar_url: string | null }[];
+        business_hours: {
+          weekday: number;
+          is_closed: boolean;
+          opens_at: string | null;
+          closes_at: string | null;
+        }[];
+      }
+    | null;
 
-  if (!shop) notFound();
+  if (!payload?.shop) notFound();
 
-  const [hoursRes, servicesRes, barbersRes] = await Promise.all([
-    supabase
-      .from("business_hours")
-      .select("weekday, is_closed, opens_at, closes_at")
-      .eq("barbershop_id", shop.id)
-      .order("weekday"),
-    supabase
-      .from("services")
-      .select("id, name, duration_minutes, price_cents")
-      .eq("barbershop_id", shop.id)
-      .eq("is_active", true)
-      .order("name"),
-    supabase
-      .from("barbershop_members")
-      .select(
-        "user_id, role, is_active, profile:profiles(id, full_name, avatar_url)"
-      )
-      .eq("barbershop_id", shop.id)
-      .eq("role", "barbeiro")
-      .eq("is_active", true),
-  ]);
-
-  const hours = hoursRes.data ?? [];
-  const services = servicesRes.data ?? [];
-  const barbers = (barbersRes.data ?? [])
-    .map((m) => m.profile)
-    .filter(
-      (p): p is { id: string; full_name: string | null; avatar_url: string | null } =>
-        !!p
-    );
+  const shop = payload.shop;
+  const hours = payload.business_hours ?? [];
+  const services = payload.services ?? [];
+  const barbers = payload.barbers ?? [];
 
   const address = formatAddressLine(shop.address as Address | null);
   const location = shortLocation(shop.address as Address | null);

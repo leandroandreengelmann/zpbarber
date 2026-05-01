@@ -2556,6 +2556,7 @@ export type Database = {
         Returns: string[]
       }
       fn_public_booking_data: { Args: { p_slug: string }; Returns: Json }
+      fn_public_shop_meta: { Args: { p_slug: string }; Returns: Json }
       fn_public_create_appointment: {
         Args: {
           p_barber_id: string

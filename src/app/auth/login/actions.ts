@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { ACTIVE_TENANT_COOKIE } from "@/lib/auth/current-tenant";
 
@@ -33,9 +34,11 @@ export async function signInAction(formData: FormData) {
     .eq("is_active", true);
 
   if (!memberships || memberships.length === 0) {
-    if (profile?.is_client) redirect("/conta");
-    await supabase.auth.signOut();
-    redirect("/auth/login?error=no-membership");
+    if (!profile?.is_client) {
+      const admin = createAdminClient();
+      await admin.from("profiles").update({ is_client: true }).eq("id", user.id);
+    }
+    redirect("/conta");
   }
 
   const c = await cookies();
