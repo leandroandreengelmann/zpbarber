@@ -12,6 +12,7 @@ const SECTIONS: NavSection[] = [
     title: "Plataforma",
     items: [
       { href: "/admin/barbershops", label: "Barbearias", icon: "storefront" },
+      { href: "/admin/clientes", label: "Clientes", icon: "usersThree" },
       { href: "/admin/plans", label: "Planos", icon: "creditCard" },
       { href: "/admin/billing", label: "Cobranças", icon: "receipt" },
       { href: "/admin/financials", label: "Financeiro", icon: "currencyDollar" },

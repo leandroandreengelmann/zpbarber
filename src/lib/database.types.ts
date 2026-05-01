@@ -2555,6 +2555,26 @@ export type Database = {
         }
         Returns: string[]
       }
+      fn_admin_list_clients: {
+        Args: {
+          p_search?: string | null
+          p_shop_id?: string | null
+          p_status?: string | null
+          p_sort?: string | null
+          p_offset?: number
+          p_limit?: number
+        }
+        Returns: Json
+      }
+      fn_admin_client_detail: {
+        Args: {
+          p_client_key: string
+          p_appt_offset?: number
+          p_appt_limit?: number
+          p_appt_shop_id?: string | null
+        }
+        Returns: Json
+      }
       fn_public_booking_data: { Args: { p_slug: string }; Returns: Json }
       fn_public_shop_meta: { Args: { p_slug: string }; Returns: Json }
       fn_public_create_appointment: {
