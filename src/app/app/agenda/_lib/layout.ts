@@ -20,10 +20,13 @@ function effectiveDuration(min: number) {
   return Math.max(SLOT_MINUTES, min);
 }
 
-export function computeHourBuckets(items: DayAppt[]): HourBucket[] {
+export function computeHourBuckets(
+  items: DayAppt[],
+  timezone?: string,
+): HourBucket[] {
   const byHour = new Map<number, DayAppt[]>();
   for (const a of items) {
-    const { hour } = localTimeParts(a.scheduled_at);
+    const { hour } = localTimeParts(a.scheduled_at, timezone);
     const arr = byHour.get(hour) ?? [];
     arr.push(a);
     byHour.set(hour, arr);

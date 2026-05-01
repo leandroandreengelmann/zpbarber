@@ -24,6 +24,7 @@ import {
   formatDateBR,
   formatMoney,
   formatTimeBR,
+  localStringToUtcDate,
 } from "@/lib/format";
 import { dayBoundsUTC, todayLocalISO } from "./agenda/_lib/calendar";
 import { AnnouncementsBanner } from "@/components/announcements/banner";
@@ -43,10 +44,11 @@ type AppointmentRow = {
 export default async function AppDashboardPage() {
   const { user, membership } = await requireBarbershop();
   const shop = membership.barbershop!;
+  const timezone = shop.timezone ?? "America/Sao_Paulo";
   const isBarber = membership.role === "barbeiro";
   const isGestor = membership.role === "gestor";
-  const today = todayLocalISO();
-  const { startISO, endISO } = dayBoundsUTC(today);
+  const today = todayLocalISO(timezone);
+  const { startISO, endISO } = dayBoundsUTC(today, timezone);
 
   const supabase = await createClient();
   const appBaseUrl = await getAppBaseUrl();
@@ -147,7 +149,7 @@ export default async function AppDashboardPage() {
       label: "Caixa",
       value: openSession ? "Aberto" : "Fechado",
       hint: openSession
-        ? `Aberto em ${formatDateBR(openSession.opened_at)} · Fundo ${formatMoney(openSession.opening_amount_cents)}`
+        ? `Aberto em ${formatDateBR(openSession.opened_at, "dd/MM/yyyy", timezone)} · Fundo ${formatMoney(openSession.opening_amount_cents)}`
         : "Abra um caixa pra registrar vendas",
       icon: ReceiptIcon,
       accent: "text-warning-primary",
@@ -156,8 +158,10 @@ export default async function AppDashboardPage() {
 
   let topBarbers: { id: string; name: string; cents: number }[] = [];
   if (isGestor) {
-    const monthStart = `${today.slice(0, 7)}-01T00:00:00-03:00`;
-    const monthStartIso = new Date(monthStart).toISOString();
+    const monthStartIso = localStringToUtcDate(
+      `${today.slice(0, 7)}-01T00:00`,
+      timezone,
+    ).toISOString();
     const [{ data: monthSales }, { data: members }] = await Promise.all([
       supabase
         .from("sales")
@@ -195,7 +199,7 @@ export default async function AppDashboardPage() {
             {isBarber ? `Bom dia, ${user.profile.full_name?.split(" ")[0] ?? ""}` : "Visão geral"}
           </h1>
           <p className="text-text-md text-[var(--color-text-tertiary)]">
-            {formatDateBR(today)} ·{" "}
+            {formatDateBR(today, "dd/MM/yyyy", timezone)} ·{" "}
             {isBarber
               ? "Seus atendimentos e ganhos do dia."
               : "Resumo da operação da barbearia."}
@@ -289,7 +293,7 @@ export default async function AppDashboardPage() {
                         <ClockIcon size={14} weight="duotone" />
                       </span>
                       <span className="text-text-md font-bold tabular-nums text-[var(--color-blue-700)]">
-                        {formatTimeBR(a.scheduled_at)}
+                        {formatTimeBR(a.scheduled_at, timezone)}
                       </span>
                     </div>
                     <div className="grid min-w-0 flex-1 gap-0.5">

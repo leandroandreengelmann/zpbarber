@@ -75,20 +75,20 @@ export default async function AgendaPage({
   searchParams: Promise<{ d?: string; v?: string }>;
 }) {
   const sp = await searchParams;
-  const date = isISODate(sp.d) ? sp.d : todayLocalISO();
-  const view: CalendarView = isView(sp.v) ? sp.v : "day";
-
   const { user, membership } = await requireBarbershop();
   const shopId = membership.barbershop!.id;
+  const timezone = membership.barbershop!.timezone ?? "America/Sao_Paulo";
+  const date = isISODate(sp.d) ? sp.d : todayLocalISO(timezone);
+  const view: CalendarView = isView(sp.v) ? sp.v : "day";
   const isBarberRole = membership.role === "barbeiro";
   const supabase = await createClient();
 
   const { startISO, endISO } =
     view === "day"
-      ? dayBoundsUTC(date)
+      ? dayBoundsUTC(date, timezone)
       : view === "week"
-        ? weekBoundsUTC(date)
-        : monthBoundsUTC(date);
+        ? weekBoundsUTC(date, timezone)
+        : monthBoundsUTC(date, timezone);
 
   let apptQuery = supabase
     .from("appointments")
@@ -212,10 +212,10 @@ export default async function AgendaPage({
 
   const headerText =
     view === "day"
-      ? formatDayHeader(date)
+      ? formatDayHeader(date, timezone)
       : view === "week"
-        ? formatWeekHeader(startOfWeekISO(date))
-        : formatMonthHeader(date);
+        ? formatWeekHeader(startOfWeekISO(date), timezone)
+        : formatMonthHeader(date, timezone);
 
   const iconISO =
     view === "day"
@@ -223,7 +223,7 @@ export default async function AgendaPage({
       : view === "week"
         ? startOfWeekISO(date)
         : startOfMonthISO(date);
-  const iconMonth = shortMonthName(iconISO);
+  const iconMonth = shortMonthName(iconISO, timezone);
   const iconDay = dayOfMonth(iconISO);
 
   return (
@@ -284,9 +284,9 @@ export default async function AgendaPage({
                 barberServices={barberServiceLinks}
                 lockedBarberId={isBarberRole ? user.id : undefined}
                 defaultDate={
-                  view === "day" && date >= todayLocalISO()
+                  view === "day" && date >= todayLocalISO(timezone)
                     ? date
-                    : todayLocalISO()
+                    : todayLocalISO(timezone)
                 }
               />
             </DialogContent>
@@ -305,7 +305,7 @@ export default async function AgendaPage({
         barberServices={barberServiceLinks}
         lockedBarberId={isBarberRole ? user.id : undefined}
         defaultDate={
-          view === "day" && date >= todayLocalISO() ? date : todayLocalISO()
+          view === "day" && date >= todayLocalISO(timezone) ? date : todayLocalISO(timezone)
         }
       />
 
@@ -320,7 +320,7 @@ export default async function AgendaPage({
               <CaretLeftIcon size={24} weight="duotone" />
             </Link>
             <Link
-              href={`/app/agenda?v=${view}&d=${todayLocalISO()}`}
+              href={`/app/agenda?v=${view}&d=${todayLocalISO(timezone)}`}
               className={buttonVariants({ variant: "outline", size: "sm", className: "h-10 sm:h-8" })}
             >
               Hoje
@@ -391,6 +391,7 @@ export default async function AgendaPage({
             <DayView
               items={items}
               date={date}
+              timezone={timezone}
               clients={saleClients}
               services={saleServices}
               products={saleProducts}
@@ -404,9 +405,9 @@ export default async function AgendaPage({
               getAvailableDaysAction={getAvailableDaysAction}
             />
           ) : view === "week" ? (
-            <WeekView items={items} date={date} />
+            <WeekView items={items} date={date} timezone={timezone} />
           ) : (
-            <MonthView items={items} date={date} />
+            <MonthView items={items} date={date} timezone={timezone} />
           )}
         </CardContent>
       </Card>

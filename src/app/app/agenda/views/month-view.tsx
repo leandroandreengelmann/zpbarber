@@ -37,18 +37,20 @@ const STATUS_SOLID: Record<AppointmentStatus, string> = {
 export function MonthView({
   items,
   date,
+  timezone,
 }: {
   items: DayAppt[];
   date: string;
+  timezone: string;
 }) {
   const monthStart = startOfMonthISO(date);
   const grid = getMonthGrid(date);
-  const today = todayLocalISO();
+  const today = todayLocalISO(timezone);
   const monthNum = Number(monthStart.split("-")[1]);
 
   const byDay = new Map<string, DayAppt[]>();
   for (const a of items) {
-    const k = localDateOnly(a.scheduled_at);
+    const k = localDateOnly(a.scheduled_at, timezone);
     const arr = byDay.get(k) ?? [];
     arr.push(a);
     byDay.set(k, arr);
@@ -141,7 +143,7 @@ export function MonthView({
                       {a.client?.full_name ?? "—"}
                     </span>
                     <span className="ml-auto shrink-0 text-text-xs tabular-nums text-white/85">
-                      {formatTimeBR(a.scheduled_at)}
+                      {formatTimeBR(a.scheduled_at, timezone)}
                     </span>
                   </div>
                 ))}

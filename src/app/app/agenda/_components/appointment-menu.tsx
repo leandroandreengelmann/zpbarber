@@ -70,6 +70,7 @@ type ActionItem = {
 
 export function AppointmentMenu({
   appt,
+  timezone,
   clients,
   services,
   products,
@@ -84,6 +85,7 @@ export function AppointmentMenu({
   children,
 }: {
   appt: DayAppt;
+  timezone: string;
   clients: SaleClient[];
   services: SaleService[];
   products: SaleProduct[];
@@ -231,7 +233,7 @@ export function AppointmentMenu({
           </span>
           <span className="inline-flex items-center gap-1 text-text-xs text-[var(--color-text-tertiary)]">
             <ClockIcon size={14} weight="duotone" />
-            {formatTimeBR(appt.scheduled_at)} · {appt.duration_minutes}min
+            {formatTimeBR(appt.scheduled_at, timezone)} · {appt.duration_minutes}min
           </span>
         </div>
         <span

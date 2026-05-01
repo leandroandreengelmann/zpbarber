@@ -78,24 +78,26 @@ function buildHours() {
 export function WeekView({
   items,
   date,
+  timezone,
 }: {
   items: DayAppt[];
   date: string;
+  timezone: string;
 }) {
   const start = startOfWeekISO(date);
   const days = Array.from({ length: 7 }, (_, i) => shiftDate(start, i));
-  const today = todayLocalISO();
+  const today = todayLocalISO(timezone);
   const hours = buildHours();
   const totalMinutes = (HOUR_END - HOUR_START + 1) * 60;
   const totalHeight = totalMinutes * PX_PER_MINUTE;
-  const now = new Date();
-  const nowHour = now.getHours();
-  const nowMinutes = nowHour * 60 + now.getMinutes();
+  const nowParts = localTimeParts(new Date().toISOString(), timezone);
+  const nowHour = nowParts.hour;
+  const nowMinutes = nowParts.totalMinutes;
   const nowOffset = (nowMinutes - HOUR_START * 60) * PX_PER_MINUTE;
 
   const byDay = new Map<string, DayAppt[]>();
   for (const a of items) {
-    const k = localDateOnly(a.scheduled_at);
+    const k = localDateOnly(a.scheduled_at, timezone);
     const arr = byDay.get(k) ?? [];
     arr.push(a);
     byDay.set(k, arr);
@@ -167,7 +169,7 @@ export function WeekView({
                         >
                           <div className="flex items-center justify-between gap-2">
                             <span className="truncate text-text-sm font-semibold">
-                              {formatTimeBR(a.scheduled_at)} ·{" "}
+                              {formatTimeBR(a.scheduled_at, timezone)} ·{" "}
                               {a.client?.full_name ?? "—"}
                             </span>
                             <span className="shrink-0 text-text-xs tabular-nums text-white/85">
@@ -295,7 +297,8 @@ export function WeekView({
                   )}
                   {layoutOverlaps(dayItems).map(({ appt: a, lane, total }) => {
                     const { totalMinutes: startMin } = localTimeParts(
-                      a.scheduled_at
+                      a.scheduled_at,
+                      timezone
                     );
                     const offsetTop =
                       (startMin - HOUR_START * 60) * PX_PER_MINUTE;
@@ -316,7 +319,7 @@ export function WeekView({
                           left: `calc(${leftPct}% + 4px)`,
                           width: `calc(${widthPct}% - ${total > 1 ? 2 : 8}px)`,
                         }}
-                        title={`${formatTimeBR(a.scheduled_at)} · ${
+                        title={`${formatTimeBR(a.scheduled_at, timezone)} · ${
                           a.client?.full_name ?? ""
                         } · ${a.service?.name ?? ""} · ${formatMoney(
                           a.price_cents
@@ -328,7 +331,7 @@ export function WeekView({
                         <div
                           className={`truncate text-text-xs leading-tight tabular-nums ${STATUS_SOLID_SUB[a.status]}`}
                         >
-                          {formatTimeBR(a.scheduled_at)} ·{" "}
+                          {formatTimeBR(a.scheduled_at, timezone)} ·{" "}
                           {a.service?.name ?? ""}
                         </div>
                       </div>
@@ -340,7 +343,7 @@ export function WeekView({
           </div>
         </div>
       </div>
-      <span className="sr-only">{isoFromDate(new Date())}</span>
+      <span className="sr-only">{isoFromDate(new Date(), timezone)}</span>
     </>
   );
 }

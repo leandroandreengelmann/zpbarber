@@ -90,6 +90,7 @@ function buildHours() {
 export function DayView({
   items,
   date,
+  timezone,
   clients,
   services,
   products,
@@ -104,6 +105,7 @@ export function DayView({
 }: {
   items: DayAppt[];
   date: string;
+  timezone: string;
   clients: SaleClient[];
   services: SaleService[];
   products: SaleProduct[];
@@ -117,13 +119,13 @@ export function DayView({
   getAvailableDaysAction: typeof getAvailableDaysAction;
 }) {
   const hours = buildHours();
-  const today = todayLocalISO();
+  const today = todayLocalISO(timezone);
   const isPastDay = date < today;
   const isToday = date === today;
-  const now = new Date();
-  const nowMinutes = now.getHours() * 60 + now.getMinutes();
+  const nowParts = localTimeParts(new Date().toISOString(), timezone);
+  const nowMinutes = nowParts.totalMinutes;
 
-  const buckets = computeHourBuckets(items);
+  const buckets = computeHourBuckets(items, timezone);
   const bucketByHour = new Map(buckets.map((b) => [b.hour, b]));
 
   function getHourHeight(h: number): number {
@@ -186,7 +188,7 @@ export function DayView({
 
         <div className="relative">
           {hours.map((h) => {
-            const slotPast = isPastDay || (isToday && h < now.getHours());
+            const slotPast = isPastDay || (isToday && h < nowParts.hour);
             const hh = hourHeights.get(h)!;
             const bucket = bucketByHour.get(h);
             return (
@@ -202,7 +204,8 @@ export function DayView({
                 {bucket?.mode === "lanes" &&
                   bucket.items.map(({ appt: a, lane }) => {
                     const { totalMinutes: startMin } = localTimeParts(
-                      a.scheduled_at
+                      a.scheduled_at,
+                      timezone
                     );
                     const top = ((startMin - h * 60) / 60) * hh;
                     const widthPct = 100 / bucket.totalLanes;
@@ -231,6 +234,7 @@ export function DayView({
                           createClientAction={createClientActionProp}
                           getAvailableSlotsAction={getAvailableSlotsActionProp}
                           getAvailableDaysAction={getAvailableDaysActionProp}
+                          timezone={timezone}
                         >
                           <div
                             className={`flex h-full w-full items-center gap-1.5 overflow-hidden rounded-md border px-2 py-1 shadow-[0_1px_2px_rgb(10_13_18_/_0.08)] transition-colors ${STATUS_SOLID[a.status]} ${STATUS_OPACITY[a.status]}`}
@@ -243,7 +247,7 @@ export function DayView({
                               />
                             )}
                             <span className="shrink-0 text-text-xs font-semibold tabular-nums">
-                              {formatTimeBR(a.scheduled_at)}
+                              {formatTimeBR(a.scheduled_at, timezone)}
                             </span>
                             <span className="min-w-0 flex-1 truncate text-text-xs font-medium">
                               {a.client?.full_name ?? "—"}
@@ -286,6 +290,7 @@ export function DayView({
                           createClientAction={createClientActionProp}
                           getAvailableSlotsAction={getAvailableSlotsActionProp}
                           getAvailableDaysAction={getAvailableDaysActionProp}
+                          timezone={timezone}
                         >
                           <div
                             className={`flex h-full w-full items-center gap-1.5 overflow-hidden rounded-md border px-2 py-1 shadow-[0_1px_2px_rgb(10_13_18_/_0.08)] transition-colors ${STATUS_SOLID[a.status]} ${STATUS_OPACITY[a.status]}`}
@@ -298,7 +303,7 @@ export function DayView({
                               />
                             )}
                             <span className="shrink-0 text-text-xs font-semibold tabular-nums">
-                              {formatTimeBR(a.scheduled_at)}
+                              {formatTimeBR(a.scheduled_at, timezone)}
                             </span>
                             <span className="min-w-0 flex-1 truncate text-text-xs font-medium">
                               {a.client?.full_name ?? "—"}
@@ -330,48 +335,3 @@ export function DayView({
   );
 }
 
-export function DayList({
-  items,
-  empty,
-}: {
-  items: DayAppt[];
-  empty: React.ReactNode;
-}) {
-  if (items.length === 0) return <>{empty}</>;
-  return (
-    <ul className="divide-y divide-[var(--color-border-secondary)]">
-      {items.map((a) => (
-        <li key={a.id} className="flex flex-wrap items-center gap-4 px-6 py-5">
-          <div className="flex w-20 shrink-0 flex-col">
-            <span className="text-display-xs font-semibold tabular-nums text-[var(--color-text-primary)]">
-              {formatTimeBR(a.scheduled_at)}
-            </span>
-            <span className="text-text-xs text-[var(--color-text-tertiary)]">
-              {a.duration_minutes} min
-            </span>
-          </div>
-          <div className="grid flex-1 gap-1">
-            <span className="text-text-md font-semibold text-[var(--color-text-primary)]">
-              {a.client?.full_name ?? "—"}
-            </span>
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-text-sm text-[var(--color-text-tertiary)]">
-              <span className="inline-flex items-center gap-1.5">
-                <ScissorsIcon size={16} weight="duotone" />
-                {a.service?.name ?? "—"}
-              </span>
-              {a.barber?.full_name && (
-                <span className="inline-flex items-center gap-1.5">
-                  <UserSwitchIcon size={16} weight="duotone" />
-                  {a.barber.full_name}
-                </span>
-              )}
-            </div>
-          </div>
-          <span className="text-text-md font-semibold tabular-nums text-[var(--color-text-primary)]">
-            {formatMoney(a.price_cents)}
-          </span>
-        </li>
-      ))}
-    </ul>
-  );
-}

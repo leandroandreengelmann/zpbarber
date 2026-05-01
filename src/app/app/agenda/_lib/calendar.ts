@@ -1,4 +1,4 @@
-import { TIMEZONE } from "@/lib/format";
+import { TIMEZONE, localStringToUtcDate } from "@/lib/format";
 
 export type CalendarView = "day" | "week" | "month";
 
@@ -14,9 +14,9 @@ export function isISODate(v: unknown): v is string {
   return typeof v === "string" && ISO_RE.test(v);
 }
 
-export function todayLocalISO() {
+export function todayLocalISO(timezone: string = TIMEZONE) {
   const fmt = new Intl.DateTimeFormat("en-CA", {
-    timeZone: TIMEZONE,
+    timeZone: timezone,
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
@@ -50,37 +50,44 @@ export function startOfMonthISO(iso: string) {
   return `${y}-${String(m).padStart(2, "0")}-01`;
 }
 
-export function rangeBoundsUTC(startISO: string, days: number) {
-  const start = new Date(`${startISO}T00:00:00-03:00`);
+export function rangeBoundsUTC(
+  startISO: string,
+  days: number,
+  timezone: string = TIMEZONE,
+) {
   const endIso = shiftDate(startISO, days - 1);
-  const end = new Date(`${endIso}T23:59:59.999-03:00`);
+  const start = localStringToUtcDate(`${startISO}T00:00`, timezone);
+  // Para o fim do dia, somamos 1 dia ao último ISO e subtraímos 1 ms.
+  const afterEndIso = shiftDate(endIso, 1);
+  const afterEnd = localStringToUtcDate(`${afterEndIso}T00:00`, timezone);
+  const end = new Date(afterEnd.getTime() - 1);
   return { startISO: start.toISOString(), endISO: end.toISOString() };
 }
 
-export function dayBoundsUTC(localISODate: string) {
-  return rangeBoundsUTC(localISODate, 1);
+export function dayBoundsUTC(localISODate: string, timezone: string = TIMEZONE) {
+  return rangeBoundsUTC(localISODate, 1, timezone);
 }
 
-export function weekBoundsUTC(localISODate: string) {
-  return rangeBoundsUTC(startOfWeekISO(localISODate), 7);
+export function weekBoundsUTC(localISODate: string, timezone: string = TIMEZONE) {
+  return rangeBoundsUTC(startOfWeekISO(localISODate), 7, timezone);
 }
 
-export function monthBoundsUTC(localISODate: string) {
+export function monthBoundsUTC(localISODate: string, timezone: string = TIMEZONE) {
   const start = startOfMonthISO(localISODate);
   const next = shiftMonth(start, 1);
-  const startDt = new Date(`${start}T00:00:00-03:00`);
-  const endDt = new Date(`${next}T00:00:00-03:00`);
+  const startDt = localStringToUtcDate(`${start}T00:00`, timezone);
+  const endDt = localStringToUtcDate(`${next}T00:00`, timezone);
   return {
     startISO: startDt.toISOString(),
     endISO: new Date(endDt.getTime() - 1).toISOString(),
   };
 }
 
-export function formatDayHeader(iso: string) {
+export function formatDayHeader(iso: string, timezone: string = TIMEZONE) {
   const [y, m, d] = iso.split("-").map(Number);
   const dt = new Date(Date.UTC(y, m - 1, d, 12, 0, 0));
   return new Intl.DateTimeFormat("pt-BR", {
-    timeZone: TIMEZONE,
+    timeZone: timezone,
     weekday: "long",
     day: "2-digit",
     month: "long",
@@ -88,29 +95,29 @@ export function formatDayHeader(iso: string) {
   }).format(dt);
 }
 
-export function formatWeekHeader(startISO: string) {
+export function formatWeekHeader(startISO: string, timezone: string = TIMEZONE) {
   const endISO = shiftDate(startISO, 6);
   const [sy, sm, sd] = startISO.split("-").map(Number);
   const [ey, em, ed] = endISO.split("-").map(Number);
   const sDt = new Date(Date.UTC(sy, sm - 1, sd, 12));
   const eDt = new Date(Date.UTC(ey, em - 1, ed, 12));
   const fmt = new Intl.DateTimeFormat("pt-BR", {
-    timeZone: TIMEZONE,
+    timeZone: timezone,
     day: "2-digit",
     month: "short",
   });
   const yfmt = new Intl.DateTimeFormat("pt-BR", {
-    timeZone: TIMEZONE,
+    timeZone: timezone,
     year: "numeric",
   });
   return `${fmt.format(sDt)} – ${fmt.format(eDt)} · ${yfmt.format(eDt)}`;
 }
 
-export function shortMonthName(iso: string) {
+export function shortMonthName(iso: string, timezone: string = TIMEZONE) {
   const [y, m] = iso.split("-").map(Number);
   const dt = new Date(Date.UTC(y, m - 1, 1, 12));
   return new Intl.DateTimeFormat("pt-BR", {
-    timeZone: TIMEZONE,
+    timeZone: timezone,
     month: "short",
   })
     .format(dt)
@@ -122,19 +129,19 @@ export function dayOfMonth(iso: string) {
   return Number(iso.split("-")[2]);
 }
 
-export function formatMonthHeader(iso: string) {
+export function formatMonthHeader(iso: string, timezone: string = TIMEZONE) {
   const [y, m] = iso.split("-").map(Number);
   const dt = new Date(Date.UTC(y, m - 1, 1, 12));
   return new Intl.DateTimeFormat("pt-BR", {
-    timeZone: TIMEZONE,
+    timeZone: timezone,
     month: "long",
     year: "numeric",
   }).format(dt);
 }
 
-export function isoFromDate(dt: Date) {
+export function isoFromDate(dt: Date, timezone: string = TIMEZONE) {
   const fmt = new Intl.DateTimeFormat("en-CA", {
-    timeZone: TIMEZONE,
+    timeZone: timezone,
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
@@ -152,10 +159,10 @@ export function getMonthGrid(iso: string) {
   return days;
 }
 
-export function localTimeParts(isoTimestamp: string) {
+export function localTimeParts(isoTimestamp: string, timezone: string = TIMEZONE) {
   const dt = new Date(isoTimestamp);
   const fmt = new Intl.DateTimeFormat("en-GB", {
-    timeZone: TIMEZONE,
+    timeZone: timezone,
     hour: "2-digit",
     minute: "2-digit",
     hour12: false,
@@ -164,8 +171,8 @@ export function localTimeParts(isoTimestamp: string) {
   return { hour: hh, minute: mm, totalMinutes: hh * 60 + mm };
 }
 
-export function localDateOnly(isoTimestamp: string) {
-  return isoFromDate(new Date(isoTimestamp));
+export function localDateOnly(isoTimestamp: string, timezone: string = TIMEZONE) {
+  return isoFromDate(new Date(isoTimestamp), timezone);
 }
 
 export const HOUR_START = 7;

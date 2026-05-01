@@ -102,16 +102,24 @@ export function parseMoneyToCents(input: string): number {
   return Math.round(value * 100);
 }
 
-export function formatDateBR(value: string | Date, pattern = "dd/MM/yyyy") {
-  return formatInTimeZone(value, TIMEZONE, pattern, { locale: ptBR });
+export function formatDateBR(
+  value: string | Date,
+  patternOrTimezone: string = "dd/MM/yyyy",
+  timezone: string = TIMEZONE,
+) {
+  // Backward compat: if 2nd arg looks like an IANA timezone, treat it as tz with default pattern.
+  const isTz = patternOrTimezone.includes("/");
+  const pattern = isTz ? "dd/MM/yyyy" : patternOrTimezone;
+  const tz = isTz ? patternOrTimezone : timezone;
+  return formatInTimeZone(value, tz, pattern, { locale: ptBR });
 }
 
-export function formatDateTimeBR(value: string | Date) {
-  return formatInTimeZone(value, TIMEZONE, "dd/MM/yyyy HH:mm", { locale: ptBR });
+export function formatDateTimeBR(value: string | Date, timezone: string = TIMEZONE) {
+  return formatInTimeZone(value, timezone, "dd/MM/yyyy HH:mm", { locale: ptBR });
 }
 
-export function formatTimeBR(value: string | Date) {
-  return formatInTimeZone(value, TIMEZONE, "HH:mm", { locale: ptBR });
+export function formatTimeBR(value: string | Date, timezone: string = TIMEZONE) {
+  return formatInTimeZone(value, timezone, "HH:mm", { locale: ptBR });
 }
 
 export function formatRelativeBR(value: string | Date) {
