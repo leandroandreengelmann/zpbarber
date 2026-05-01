@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
 export async function signInClientAction(formData: FormData) {
@@ -26,9 +27,25 @@ export async function signInClientAction(formData: FormData) {
     .eq("id", user.id)
     .maybeSingle();
 
+  if (profile?.is_super_admin) redirect("/admin");
+
   if (!profile?.is_client) {
-    if (profile?.is_super_admin) redirect("/admin");
-    redirect("/app");
+    const { data: memberships } = await supabase
+      .from("barbershop_members")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("is_active", true)
+      .limit(1);
+
+    if (memberships && memberships.length > 0) {
+      redirect("/app");
+    }
+
+    const admin = createAdminClient();
+    await admin
+      .from("profiles")
+      .update({ is_client: true })
+      .eq("id", user.id);
   }
 
   redirect(next || "/conta");
