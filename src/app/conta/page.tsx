@@ -47,18 +47,18 @@ export default async function ContaHomePage() {
   const pastList = (past ?? []).filter((a) => !upcomingIds.has(a.appointment_id));
 
   return (
-    <div className="grid gap-6">
+    <div className="grid gap-5 sm:gap-8">
       <div className="grid gap-1">
-        <h1 className="text-display-xs font-semibold tracking-tight text-[var(--color-text-primary)]">
+        <h1 className="text-display-xs font-semibold tracking-tight text-[var(--color-text-primary)] sm:text-display-sm">
           Meus agendamentos
         </h1>
-        <p className="text-text-md text-[var(--color-text-tertiary)]">
-          Acompanhe e gerencie seus horários em qualquer barbearia da plataforma.
+        <p className="text-text-sm text-[var(--color-text-tertiary)] sm:text-text-md">
+          Acompanhe e gerencie seus horários.
         </p>
       </div>
 
       <section className="grid gap-3">
-        <h2 className="text-text-lg font-semibold text-[var(--color-text-primary)]">
+        <h2 className="text-text-md font-semibold text-[var(--color-text-primary)] sm:text-text-lg">
           Próximos
         </h2>
         {upcomingList.length === 0 ? (
@@ -75,11 +75,11 @@ export default async function ContaHomePage() {
       </section>
 
       <section className="grid gap-3">
-        <h2 className="text-text-lg font-semibold text-[var(--color-text-primary)]">
+        <h2 className="text-text-md font-semibold text-[var(--color-text-primary)] sm:text-text-lg">
           Histórico
         </h2>
         {pastList.length === 0 ? (
-          <Card className="p-6 text-center text-text-sm text-[var(--color-text-tertiary)]">
+          <Card className="p-5 text-center text-text-sm text-[var(--color-text-tertiary)]">
             Seus agendamentos passados aparecerão aqui.
           </Card>
         ) : (
@@ -117,57 +117,106 @@ function AppointmentCard({
   cancellable?: boolean;
 }) {
   return (
-    <Card className="grid gap-4 p-4 sm:grid-cols-[auto_1fr_auto] sm:items-start sm:gap-6">
-      <div className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[var(--color-border-secondary)] bg-[var(--color-bg-primary)]">
-        {appointment.shop_logo_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={appointment.shop_logo_url}
-            alt={appointment.shop_name}
-            className="size-full object-cover"
-          />
-        ) : (
-          <StorefrontIcon size={28} weight="duotone" className="text-[var(--color-fg-secondary)]" />
-        )}
-      </div>
-
-      <div className="grid gap-2">
-        <div className="flex flex-wrap items-center gap-2">
-          <Link
-            href={`/${appointment.shop_slug}`}
-            className="text-text-md font-semibold text-[var(--color-text-primary)] hover:underline"
+    <Card className="overflow-hidden p-0">
+      <div className="grid gap-3 p-4 sm:grid-cols-[auto_1fr_auto] sm:items-start sm:gap-5 sm:p-5">
+        <div className="flex items-center justify-between gap-2 sm:contents">
+          <div className="flex items-center gap-3 sm:items-start">
+            <div className="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[var(--color-border-secondary)] bg-[var(--color-bg-primary)] sm:size-12">
+              {appointment.shop_logo_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={appointment.shop_logo_url}
+                  alt={appointment.shop_name}
+                  className="size-full object-cover"
+                />
+              ) : (
+                <StorefrontIcon
+                  size={26}
+                  weight="duotone"
+                  className="text-[var(--color-fg-secondary)]"
+                />
+              )}
+            </div>
+            <Link
+              href={`/${appointment.shop_slug}`}
+              className="truncate text-text-md font-semibold text-[var(--color-text-primary)] hover:underline sm:hidden"
+            >
+              {appointment.shop_name}
+            </Link>
+          </div>
+          <Badge
+            variant={STATUS_VARIANT[appointment.status] ?? "outline"}
+            className="shrink-0 sm:hidden"
           >
-            {appointment.shop_name}
-          </Link>
-          <Badge variant={STATUS_VARIANT[appointment.status] ?? "outline"}>
             {STATUS_LABEL[appointment.status] ?? appointment.status}
           </Badge>
         </div>
-        <div className="grid gap-1 text-text-sm text-[var(--color-text-secondary)]">
-          <span className="inline-flex items-center gap-2">
-            <CalendarCheckIcon size={20} weight="duotone" className="text-[var(--color-fg-secondary)]" />
-            {formatDateBR(appointment.scheduled_at)} às {formatTimeBR(appointment.scheduled_at)}
-          </span>
-          <span className="inline-flex items-center gap-2">
-            <ScissorsIcon size={20} weight="duotone" className="text-[var(--color-fg-secondary)]" />
-            {appointment.service_name}
-          </span>
-          <span className="inline-flex items-center gap-2">
-            <UserCircleIcon size={20} weight="duotone" className="text-[var(--color-fg-secondary)]" />
-            {appointment.barber_name}
-          </span>
-          <span className="inline-flex items-center gap-2 text-[var(--color-text-tertiary)]">
-            <ClockIcon size={20} weight="duotone" />
-            {appointment.duration_minutes} min · {formatMoney(appointment.price_cents)}
-          </span>
-        </div>
-      </div>
 
-      {cancellable && (
-        <div className="flex sm:justify-end">
-          <CancelAppointmentButton appointmentId={appointment.appointment_id} />
+        <div className="grid gap-2">
+          <div className="hidden flex-wrap items-center gap-2 sm:flex">
+            <Link
+              href={`/${appointment.shop_slug}`}
+              className="text-text-md font-semibold text-[var(--color-text-primary)] hover:underline"
+            >
+              {appointment.shop_name}
+            </Link>
+            <Badge variant={STATUS_VARIANT[appointment.status] ?? "outline"}>
+              {STATUS_LABEL[appointment.status] ?? appointment.status}
+            </Badge>
+          </div>
+
+          <div className="flex items-center gap-3 rounded-xl bg-[var(--color-bg-secondary)] p-3 sm:bg-transparent sm:p-0">
+            <div className="flex flex-col items-center justify-center rounded-lg bg-[var(--color-blue-50)] px-3 py-2 text-center text-[var(--color-blue-700)] sm:hidden">
+              <span className="text-text-xs font-semibold uppercase tracking-wide">
+                {formatDateBR(appointment.scheduled_at).slice(0, 5)}
+              </span>
+              <span className="text-text-lg font-bold tabular-nums leading-tight">
+                {formatTimeBR(appointment.scheduled_at)}
+              </span>
+            </div>
+            <div className="grid min-w-0 flex-1 gap-1 text-text-sm text-[var(--color-text-secondary)]">
+              <span className="hidden items-center gap-2 sm:inline-flex">
+                <CalendarCheckIcon
+                  size={18}
+                  weight="duotone"
+                  className="text-[var(--color-fg-secondary)]"
+                />
+                {formatDateBR(appointment.scheduled_at)} às{" "}
+                {formatTimeBR(appointment.scheduled_at)}
+              </span>
+              <span className="inline-flex items-center gap-2 truncate">
+                <ScissorsIcon
+                  size={18}
+                  weight="duotone"
+                  className="shrink-0 text-[var(--color-fg-secondary)]"
+                />
+                <span className="truncate">{appointment.service_name}</span>
+              </span>
+              <span className="inline-flex items-center gap-2 truncate">
+                <UserCircleIcon
+                  size={18}
+                  weight="duotone"
+                  className="shrink-0 text-[var(--color-fg-secondary)]"
+                />
+                <span className="truncate">{appointment.barber_name}</span>
+              </span>
+              <span className="inline-flex items-center gap-2 text-text-xs text-[var(--color-text-tertiary)] sm:text-text-sm">
+                <ClockIcon size={16} weight="duotone" className="shrink-0" />
+                {appointment.duration_minutes} min ·{" "}
+                {formatMoney(appointment.price_cents)}
+              </span>
+            </div>
+          </div>
         </div>
-      )}
+
+        {cancellable && (
+          <div className="flex sm:justify-end">
+            <CancelAppointmentButton
+              appointmentId={appointment.appointment_id}
+            />
+          </div>
+        )}
+      </div>
     </Card>
   );
 }

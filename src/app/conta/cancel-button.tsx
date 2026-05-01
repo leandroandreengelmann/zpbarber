@@ -23,15 +23,14 @@ export function CancelAppointmentButton({
       onSubmit={(e) => {
         if (!confirm("Cancelar este agendamento?")) e.preventDefault();
       }}
-      className="grid gap-1.5"
+      className="grid w-full gap-1.5 sm:w-auto"
     >
       <input type="hidden" name="appointment_id" value={appointmentId} />
       <Button
         type="submit"
         variant="outline"
-        size="sm"
         disabled={pending}
-        className="text-[var(--color-text-error-primary)]"
+        className="h-11 w-full text-[var(--color-text-error-primary)] sm:w-auto"
       >
         {pending ? (
           <>

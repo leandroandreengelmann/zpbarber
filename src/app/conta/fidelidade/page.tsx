@@ -12,13 +12,13 @@ export default async function ContaFidelidadePage() {
   const cards = data ?? [];
 
   return (
-    <div className="grid gap-6">
+    <div className="grid gap-5 sm:gap-8">
       <div className="grid gap-1">
-        <h1 className="text-display-xs font-semibold tracking-tight text-[var(--color-text-primary)]">
+        <h1 className="text-display-xs font-semibold tracking-tight text-[var(--color-text-primary)] sm:text-display-sm">
           Fidelidade
         </h1>
-        <p className="text-text-md text-[var(--color-text-tertiary)]">
-          Seu progresso em cada barbearia da plataforma.
+        <p className="text-text-sm text-[var(--color-text-tertiary)] sm:text-text-md">
+          Seu progresso em cada barbearia.
         </p>
       </div>
 
@@ -69,18 +69,19 @@ function LoyaltyCard({
   required: number;
 }) {
   const pct = required > 0 ? Math.min(100, Math.round((current / required) * 100)) : 0;
+  const remaining = Math.max(0, required - current);
   return (
-    <Card className="grid gap-4 p-4">
+    <Card className="grid gap-4 p-4 sm:p-5">
       <div className="flex items-center gap-3">
-        <div className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[var(--color-border-secondary)] bg-[var(--color-bg-primary)]">
+        <div className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[var(--color-border-secondary)] bg-[var(--color-bg-primary)]">
           {shopLogoUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={shopLogoUrl} alt={shopName} className="size-full object-cover" />
           ) : (
-            <StorefrontIcon size={24} weight="duotone" className="text-[var(--color-fg-secondary)]" />
+            <StorefrontIcon size={26} weight="duotone" className="text-[var(--color-fg-secondary)]" />
           )}
         </div>
-        <div className="grid flex-1 gap-0.5 min-w-0">
+        <div className="grid min-w-0 flex-1 gap-0.5">
           <Link
             href={`/${shopSlug}`}
             className="truncate text-text-md font-semibold text-[var(--color-text-primary)] hover:underline"
@@ -91,21 +92,23 @@ function LoyaltyCard({
             {current} de {required} atendimentos
           </span>
         </div>
+        <span className="shrink-0 rounded-md bg-[var(--color-blue-50)] px-2 py-1 text-text-xs font-bold tabular-nums text-[var(--color-blue-700)]">
+          {pct}%
+        </span>
       </div>
 
-      <div className="grid gap-1.5">
-        <div className="h-2.5 overflow-hidden rounded-full bg-[var(--color-bg-secondary)]">
+      <div className="grid gap-2">
+        <div className="h-3 overflow-hidden rounded-full bg-[var(--color-bg-secondary)]">
           <div
             className="h-full rounded-full bg-[var(--color-blue-600)] transition-all"
             style={{ width: `${pct}%` }}
           />
         </div>
-        <div className="flex items-center justify-between text-text-xs text-[var(--color-text-tertiary)]">
-          <span>{pct}%</span>
-          <span>
-            Faltam {Math.max(0, required - current)} para a recompensa
-          </span>
-        </div>
+        <p className="text-text-xs text-[var(--color-text-tertiary)] sm:text-text-sm">
+          {remaining === 0
+            ? "Recompensa disponível!"
+            : `Faltam ${remaining} ${remaining === 1 ? "atendimento" : "atendimentos"} para a recompensa.`}
+        </p>
       </div>
     </Card>
   );

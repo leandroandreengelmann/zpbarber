@@ -5,6 +5,7 @@ import {
   MapPinIcon,
   PhoneIcon,
   ScissorsIcon,
+  SignInIcon,
   UsersThreeIcon,
   WhatsappLogoIcon,
 } from "@phosphor-icons/react/dist/ssr";
@@ -179,6 +180,13 @@ export default async function PublicShopPage({
                 WhatsApp
               </a>
             )}
+            <Link
+              href="/cliente/login"
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-lg border border-[var(--color-border-secondary)] bg-[var(--color-bg-primary)] px-5 text-text-md font-semibold text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-bg-secondary)]"
+            >
+              <SignInIcon size={20} weight="duotone" />
+              Entrar
+            </Link>
           </div>
         </div>
       </section>

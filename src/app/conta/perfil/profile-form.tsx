@@ -51,6 +51,7 @@ export function ProfileForm({
           minLength={2}
           maxLength={120}
           autoComplete="name"
+          className="h-11"
         />
       </div>
 
@@ -64,6 +65,7 @@ export function ProfileForm({
           placeholder="(11) 99999-9999"
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
+          className="h-11"
         />
         <p className="text-text-xs text-[var(--color-text-tertiary)]">
           Mudou de número? Vamos vincular seus agendamentos antigos automaticamente.
@@ -73,7 +75,7 @@ export function ProfileForm({
       <Button
         type="submit"
         disabled={pending}
-        className="h-11 w-fit font-semibold"
+        className="h-11 w-full font-semibold sm:w-fit"
       >
         <FloppyDiskIcon size={28} weight="duotone" />
         {pending ? "Salvando..." : "Salvar alterações"}
