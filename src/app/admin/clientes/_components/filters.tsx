@@ -79,7 +79,7 @@ export function ClientsFilters({ shops, defaultValues }: Props) {
       >
         <option value="">Todos os status</option>
         <option value="with_account">Com conta</option>
-        <option value="walk_in">Walk-in</option>
+        <option value="walk_in">Sem conta</option>
       </select>
 
       <select

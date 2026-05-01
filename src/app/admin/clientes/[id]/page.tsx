@@ -157,7 +157,7 @@ export default async function AdminClientDetailPage({
           variant={detail.profile.has_account ? "default" : "outline"}
           className="w-fit"
         >
-          {detail.profile.has_account ? "Com conta" : "Walk-in"}
+          {detail.profile.has_account ? "Com conta" : "Sem conta"}
         </Badge>
       </Card>
 

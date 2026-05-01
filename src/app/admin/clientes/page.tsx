@@ -159,7 +159,7 @@ export default async function AdminClientsPage({
                     </TableCell>
                     <TableCell>
                       <Badge variant={c.has_account ? "default" : "outline"}>
-                        {c.has_account ? "Com conta" : "Walk-in"}
+                        {c.has_account ? "Com conta" : "Sem conta"}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right tabular-nums">
