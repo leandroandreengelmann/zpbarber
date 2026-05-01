@@ -30,6 +30,7 @@ export async function requireBarbershop() {
     const memberships = await getCurrentMemberships();
     if (memberships.length === 0) {
       if (user.profile.is_super_admin) redirect("/admin");
+      if (user.profile.is_client) redirect("/conta");
       redirect("/auth/login?error=no-membership");
     }
     redirect("/auth/select-tenant");

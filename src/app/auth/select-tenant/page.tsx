@@ -18,7 +18,11 @@ export default async function SelectTenantPage() {
   if (!user) redirect("/auth/login");
 
   const memberships = await getCurrentMemberships();
-  if (memberships.length === 0) redirect("/auth/login?error=no-membership");
+  if (memberships.length === 0) {
+    if (user.profile.is_super_admin) redirect("/admin");
+    if (user.profile.is_client) redirect("/conta");
+    redirect("/auth/login?error=no-membership");
+  }
   if (memberships.length === 1) {
     const id = memberships[0].barbershop?.id;
     if (id) await setActiveTenantAction(id);
