@@ -35,7 +35,7 @@ export const getCurrentMemberships = cache(async () => {
   if (!user) return [];
   const { data, error } = await supabase
     .from("barbershop_members")
-    .select("role, is_active, barbershop:barbershops(id, slug, name, primary_color, status)")
+    .select("role, is_active, barbershop:barbershops(id, slug, name, primary_color, status, timezone)")
     .eq("is_active", true)
     .eq("user_id", user.id);
   if (error) throw error;

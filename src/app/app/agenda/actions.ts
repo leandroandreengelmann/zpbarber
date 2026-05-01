@@ -8,7 +8,11 @@ import {
   clientSchema,
   updateStatusSchema,
 } from "@/lib/zod/agenda";
-import { parseMoneyToCents } from "@/lib/format";
+import {
+  localStringToUtcDate,
+  parseMoneyToCents,
+  partsInTimezone,
+} from "@/lib/format";
 import { dispatchAppointmentMessages } from "@/lib/whatsapp/dispatch";
 
 type State = { error?: string; ok?: boolean };
@@ -24,7 +28,14 @@ async function ensureStaff() {
     userId: user.id,
     shopId: membership.barbershop!.id,
     role: membership.role,
+    timezone:
+      (membership.barbershop as { timezone?: string | null } | null)?.timezone ??
+      "America/Sao_Paulo",
   };
+}
+
+function localToUtcIso(local: string, timezone: string): string {
+  return localStringToUtcDate(local, timezone).toISOString();
 }
 
 export async function createClientAction(
@@ -83,14 +94,15 @@ export async function createAppointmentAction(
   if (ctx.role === "barbeiro" && d.barber_id !== ctx.userId) {
     return { error: "Barbeiros só podem criar agendamentos para si mesmos." };
   }
-  if (new Date(d.scheduled_at).getTime() < Date.now() - 60_000) {
+  const startUtc = localToUtcIso(d.scheduled_at, ctx.timezone);
+  if (new Date(startUtc).getTime() < Date.now() - 60_000) {
     return { error: "Não é possível agendar no passado." };
   }
   const supabase = await createClient();
 
-  const startIso = new Date(d.scheduled_at).toISOString();
+  const startIso = startUtc;
   const endIso = new Date(
-    new Date(d.scheduled_at).getTime() + d.duration_minutes * 60_000
+    new Date(startUtc).getTime() + d.duration_minutes * 60_000
   ).toISOString();
 
   const { data: conflicts } = await supabase
@@ -191,7 +203,7 @@ export async function updateAppointmentAction(
     return { error: "Barbeiros só podem editar agendamentos próprios." };
   }
   const supabase = await createClient();
-  const startIso = new Date(d.scheduled_at).toISOString();
+  const startIso = localToUtcIso(d.scheduled_at, ctx.timezone);
 
   const { error } = await supabase
     .from("appointments")
@@ -277,10 +289,13 @@ export async function getAvailableSlotsAction(input: {
   const ctx = await ensureStaff();
   const { barberId, serviceId, date, excludeAppointmentId } = input;
   const supabase = await createClient();
+  const tz = ctx.timezone;
 
   const [y, mo, d] = date.split("-").map(Number);
-  const localDate = new Date(y, mo - 1, d);
-  const weekday = localDate.getDay();
+  // weekday do dia no fuso da loja (Date(y,mo-1,d) usa fuso do servidor, mas getDay
+  // só depende da data — independente do fuso, o dia da semana é o mesmo)
+  const localDate = new Date(Date.UTC(y, mo - 1, d, 12, 0, 0));
+  const weekday = localDate.getUTCDay();
 
   const { data: svc } = await supabase
     .from("services")
@@ -343,9 +358,8 @@ export async function getAvailableSlotsAction(input: {
     return { date, weekday, closed: true, slots: [] };
   }
 
-  const dayStart = buildLocalDate(date, 0);
-  const dayEnd = new Date(dayStart);
-  dayEnd.setDate(dayEnd.getDate() + 1);
+  const dayStart = localStringToUtcDate(`${date}T00:00`, tz);
+  const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60_000);
 
   let apptQuery = supabase
     .from("appointments")
@@ -360,8 +374,7 @@ export async function getAvailableSlotsAction(input: {
   const { data: appts } = await apptQuery;
 
   const busy: { start: number; end: number }[] = (appts ?? []).map((a) => {
-    const start = new Date(a.scheduled_at);
-    const startMin = start.getHours() * 60 + start.getMinutes();
+    const startMin = partsInTimezone(new Date(a.scheduled_at), tz).totalMinutes;
     return { start: startMin, end: startMin + (a.duration_minutes ?? 0) };
   });
 
@@ -385,12 +398,9 @@ export async function getAvailableSlotsAction(input: {
     }
   }
 
-  const today = new Date();
-  const isToday =
-    today.getFullYear() === y &&
-    today.getMonth() === mo - 1 &&
-    today.getDate() === d;
-  const nowMin = today.getHours() * 60 + today.getMinutes();
+  const todayParts = partsInTimezone(new Date(), tz);
+  const isToday = todayParts.date === date;
+  const nowMin = todayParts.totalMinutes;
 
   const slots: { start: string; label: string }[] = [];
   const step = Math.max(5, duration);
@@ -420,12 +430,10 @@ export async function getAvailableDaysAction(input: {
   const { barberId, serviceId } = input;
   const days = input.days ?? 14;
   const supabase = await createClient();
+  const tz = ctx.timezone;
 
-  const [fy, fmo, fd] = input.fromDate.split("-").map(Number);
-  const start = new Date(fy, fmo - 1, fd);
-  start.setHours(0, 0, 0, 0);
-  const end = new Date(start);
-  end.setDate(end.getDate() + days);
+  const start = localStringToUtcDate(`${input.fromDate}T00:00`, tz);
+  const end = new Date(start.getTime() + days * 24 * 60 * 60_000);
 
   const { data: svc } = await supabase
     .from("services")
@@ -490,12 +498,16 @@ export async function getAvailableDaysAction(input: {
   }));
 
   const now = new Date();
+  const todayParts = partsInTimezone(now, tz);
 
   const result: AvailableDay[] = [];
   for (let i = 0; i < days; i++) {
-    const day = new Date(start);
-    day.setDate(day.getDate() + i);
-    const weekday = day.getDay();
+    const dayStart = new Date(start.getTime() + i * 24 * 60 * 60_000);
+    const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60_000);
+    const dayParts = partsInTimezone(dayStart, tz);
+    const isoDate = dayParts.date;
+    const [yy, mm, dd] = isoDate.split("-").map(Number);
+    const weekday = new Date(Date.UTC(yy, mm - 1, dd, 12, 0, 0)).getUTCDay();
 
     const bwh = bwhByWeekday.get(weekday);
     const bh = bhByWeekday.get(weekday);
@@ -508,28 +520,17 @@ export async function getAvailableDaysAction(input: {
     if (isClosed || opens == null || closes == null) continue;
     if (closes - opens < duration) continue;
 
-    const dayStart = new Date(day);
-    const dayEnd = new Date(day);
-    dayEnd.setDate(dayEnd.getDate() + 1);
-
     const fullyOff = timeOffs.some(
       (t) => t.start <= dayStart && t.end >= dayEnd
     );
     if (fullyOff) continue;
 
-    if (
-      day.getFullYear() === now.getFullYear() &&
-      day.getMonth() === now.getMonth() &&
-      day.getDate() === now.getDate()
-    ) {
-      const nowMin = now.getHours() * 60 + now.getMinutes();
+    if (isoDate === todayParts.date) {
+      const nowMin = todayParts.totalMinutes;
       if (nowMin + duration > closes) continue;
     }
 
-    result.push({
-      date: `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, "0")}-${String(day.getDate()).padStart(2, "0")}`,
-      weekday,
-    });
+    result.push({ date: isoDate, weekday });
   }
 
   return result;

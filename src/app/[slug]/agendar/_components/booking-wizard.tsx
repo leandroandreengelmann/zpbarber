@@ -16,8 +16,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { partsInTimezone } from "@/lib/format";
 import {
   createPublicAppointmentAction,
+  loadAvailableDaysAction,
   loadAvailableSlotsAction,
   type BookingPageData,
 } from "../actions";
@@ -54,24 +56,21 @@ const MONTH_FULL_LABELS = [
   "dezembro",
 ];
 
-function isSameDay(a: Date, b: Date) {
-  return (
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate()
-  );
+function formatDateBR(iso: string) {
+  const [, m, d] = iso.split("-");
+  return `${d}/${m}`;
 }
 
-function formatDate(d: Date) {
-  return `${d.getDate().toString().padStart(2, "0")}/${(d.getMonth() + 1)
-    .toString()
-    .padStart(2, "0")}`;
-}
-
-function isoDate(d: Date) {
-  return `${d.getFullYear()}-${(d.getMonth() + 1)
-    .toString()
-    .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")}`;
+function dayInfo(iso: string) {
+  const [y, m, d] = iso.split("-").map(Number);
+  // Date.UTC + getUTCDay para evitar timezone shift do navegador
+  const dt = new Date(Date.UTC(y, m - 1, d));
+  return {
+    year: y,
+    month: m,
+    day: d,
+    weekday: dt.getUTCDay(),
+  };
 }
 
 function formatMoney(cents: number) {
@@ -81,21 +80,26 @@ function formatMoney(cents: number) {
   });
 }
 
-function formatTime(iso: string) {
-  return new Date(iso).toLocaleTimeString("pt-BR", {
+function formatTime(iso: string, timezone: string) {
+  return new Intl.DateTimeFormat("pt-BR", {
+    timeZone: timezone,
     hour: "2-digit",
     minute: "2-digit",
-  });
+    hour12: false,
+  }).format(new Date(iso));
 }
 
 export function BookingWizard({ slug, data, currentClient }: Props) {
+  const timezone = data.shop.timezone;
   const [step, setStep] = useState<Step>(1);
   const [barberId, setBarberId] = useState<string | null>(null);
   const [serviceId, setServiceId] = useState<string | null>(null);
-  const [date, setDate] = useState<Date | null>(null);
+  const [date, setDate] = useState<string | null>(null);
   const [slot, setSlot] = useState<string | null>(null);
   const [slots, setSlots] = useState<string[]>([]);
+  const [availableDays, setAvailableDays] = useState<string[] | null>(null);
   const [loadingSlots, startSlotsTransition] = useTransition();
+  const [loadingDays, startDaysTransition] = useTransition();
   const [phone, setPhone] = useState(currentClient?.phone ?? "");
 
   const [state, formAction, pending] = useActionState(
@@ -131,18 +135,40 @@ export function BookingWizard({ slug, data, currentClient }: Props) {
     return data.services.filter((s) => linkedServiceIds.has(s.id));
   }, [data.barber_services, data.services, barber]);
 
-  // Datas dos próximos 14 dias
+  // Próximos 14 dias a partir de "hoje" no fuso da barbearia.
   const dates = useMemo(() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return Array.from({ length: 14 }, (_, i) => {
-      const d = new Date(today);
-      d.setDate(today.getDate() + i);
-      return d;
-    });
-  }, []);
+    const today = partsInTimezone(new Date(), timezone).date;
+    const [y, m, d] = today.split("-").map(Number);
+    const result: string[] = [];
+    for (let i = 0; i < 14; i++) {
+      const dt = new Date(Date.UTC(y, m - 1, d + i));
+      const yy = dt.getUTCFullYear();
+      const mm = String(dt.getUTCMonth() + 1).padStart(2, "0");
+      const dd = String(dt.getUTCDate()).padStart(2, "0");
+      result.push(`${yy}-${mm}-${dd}`);
+    }
+    return result;
+  }, [timezone]);
 
-  // Carregar slots quando data muda
+  // Carregar dias disponíveis quando entra no passo 3.
+  useEffect(() => {
+    if (step !== 3 || !service || !barberId) {
+      setAvailableDays(null);
+      return;
+    }
+    startDaysTransition(async () => {
+      const result = await loadAvailableDaysAction(
+        slug,
+        service.id,
+        barberId,
+        dates[0],
+        14
+      );
+      setAvailableDays(result);
+    });
+  }, [step, service, barberId, slug, dates]);
+
+  // Carregar slots quando data muda.
   useEffect(() => {
     if (step !== 3 || !date || !service || !barberId) {
       setSlots([]);
@@ -154,7 +180,7 @@ export function BookingWizard({ slug, data, currentClient }: Props) {
         slug,
         service.id,
         barberId,
-        isoDate(date)
+        date
       );
       setSlots(result);
     });
@@ -169,6 +195,7 @@ export function BookingWizard({ slug, data, currentClient }: Props) {
         scheduledAt={state.scheduledAt}
         durationMinutes={state.durationMinutes ?? 0}
         priceCents={state.priceCents ?? 0}
+        timezone={timezone}
         isClient={!!currentClient}
       />
     );
@@ -179,6 +206,12 @@ export function BookingWizard({ slug, data, currentClient }: Props) {
     (step === 2 && !!serviceId) ||
     (step === 3 && !!slot) ||
     step === 4;
+
+  const visibleDates = availableDays
+    ? dates.filter((iso) => availableDays.includes(iso))
+    : dates;
+  const headerDate = date ?? visibleDates[0] ?? dates[0];
+  const headerInfo = dayInfo(headerDate);
 
   return (
     <div className="grid gap-4 sm:gap-6">
@@ -309,9 +342,9 @@ export function BookingWizard({ slug, data, currentClient }: Props) {
           <div className="grid gap-2.5">
             <div className="flex items-baseline justify-between gap-2">
               <span className="text-text-sm font-semibold capitalize text-[var(--color-text-primary)]">
-                {MONTH_FULL_LABELS[(date ?? dates[0]).getMonth()]}{" "}
+                {MONTH_FULL_LABELS[headerInfo.month - 1]}{" "}
                 <span className="text-[var(--color-text-tertiary)]">
-                  {(date ?? dates[0]).getFullYear()}
+                  {headerInfo.year}
                 </span>
               </span>
               <span className="text-text-xs text-[var(--color-text-tertiary)]">
@@ -322,16 +355,32 @@ export function BookingWizard({ slug, data, currentClient }: Props) {
               Essas são as datas em que o profissional atende. Toque em um dia
               para ver os horários.
             </p>
-            <div className="flex gap-2 overflow-x-auto px-0.5 py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                {dates.map((d) => {
-                  const selected = !!date && isSameDay(d, date);
-                  const today = isSameDay(d, dates[0]);
-                  const isWeekend = d.getDay() === 0 || d.getDay() === 6;
+            {loadingDays && availableDays === null ? (
+              <div className="flex gap-2 overflow-hidden px-0.5 py-2">
+                {Array.from({ length: 7 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="h-[78px] min-w-[60px] shrink-0 animate-pulse rounded-2xl bg-[var(--color-bg-secondary)] sm:min-w-[64px]"
+                  />
+                ))}
+              </div>
+            ) : visibleDates.length === 0 ? (
+              <p className="rounded-lg border border-dashed border-[var(--color-border-secondary)] px-4 py-6 text-center text-text-sm text-[var(--color-text-tertiary)]">
+                Sem disponibilidade nos próximos 14 dias para esse profissional.
+                Volte e escolha outro.
+              </p>
+            ) : (
+              <div className="flex gap-2 overflow-x-auto px-0.5 py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                {visibleDates.map((iso) => {
+                  const info = dayInfo(iso);
+                  const selected = date === iso;
+                  const today = iso === dates[0];
+                  const isWeekend = info.weekday === 0 || info.weekday === 6;
                   return (
                     <button
-                      key={d.toISOString()}
+                      key={iso}
                       type="button"
-                      onClick={() => setDate(d)}
+                      onClick={() => setDate(iso)}
                       aria-pressed={selected}
                       className={`group relative grid min-w-[60px] shrink-0 gap-1 rounded-2xl border p-3 text-center transition-all duration-200 ease-out sm:min-w-[64px] ${
                         selected
@@ -348,14 +397,14 @@ export function BookingWizard({ slug, data, currentClient }: Props) {
                               : "text-[var(--color-text-tertiary)]"
                         }`}
                       >
-                        {WEEKDAY_LABELS[d.getDay()]}
+                        {WEEKDAY_LABELS[info.weekday]}
                       </span>
                       <span
                         className={`text-display-xs font-bold tabular-nums leading-none transition-colors ${
                           selected ? "text-white" : "text-[var(--color-text-primary)]"
                         }`}
                       >
-                        {d.getDate()}
+                        {info.day}
                       </span>
                       <span
                         className={`mx-auto h-1 w-1 rounded-full transition-all ${
@@ -370,10 +419,11 @@ export function BookingWizard({ slug, data, currentClient }: Props) {
                     </button>
                   );
                 })}
-            </div>
+              </div>
+            )}
           </div>
 
-          {!date && (
+          {!date && visibleDates.length > 0 && (
             <p className="flex items-center gap-2 text-text-sm text-[var(--color-text-tertiary)]">
               <CalendarBlankIcon size={20} weight="duotone" />
               Selecione um dia para ver os horários disponíveis.
@@ -383,7 +433,7 @@ export function BookingWizard({ slug, data, currentClient }: Props) {
           {date && (
             <div className="grid gap-2">
               <span className="text-text-sm font-medium text-[var(--color-text-secondary)]">
-                Horários disponíveis para {formatDate(date)}
+                Horários disponíveis para {formatDateBR(date)}
               </span>
               {loadingSlots ? (
                 <div className="grid grid-cols-3 gap-2 md:grid-cols-6">
@@ -411,7 +461,7 @@ export function BookingWizard({ slug, data, currentClient }: Props) {
                           : "border-[var(--color-border-secondary)] bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] hover:border-[var(--color-fg-tertiary)]"
                       }`}
                     >
-                      {formatTime(s)}
+                      {formatTime(s, timezone)}
                     </button>
                   ))}
                 </div>
@@ -460,7 +510,7 @@ export function BookingWizard({ slug, data, currentClient }: Props) {
               <li className="flex items-center gap-2">
                 <ClockIcon size={18} weight="duotone" className="shrink-0" />
                 <span className="truncate">
-                  {date && formatDate(date)} · {formatTime(slot)} (
+                  {date && formatDateBR(date)} · {formatTime(slot, timezone)} (
                   {service.duration_minutes} min)
                 </span>
               </li>

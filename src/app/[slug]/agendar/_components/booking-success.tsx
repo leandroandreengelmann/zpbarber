@@ -21,6 +21,7 @@ type Props = {
   scheduledAt: string;
   durationMinutes: number;
   priceCents: number;
+  timezone: string;
   isClient?: boolean;
 };
 
@@ -34,18 +35,33 @@ const WEEKDAYS = [
   "Sábado",
 ];
 
-function formatLongDate(d: Date) {
-  return `${WEEKDAYS[d.getDay()]}, ${d
-    .getDate()
-    .toString()
-    .padStart(2, "0")}/${(d.getMonth() + 1).toString().padStart(2, "0")}/${d.getFullYear()}`;
+function formatLongDate(d: Date, timezone: string) {
+  const dateParts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: timezone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(d);
+  const get = (t: string) => dateParts.find((p) => p.type === t)?.value ?? "";
+  const weekdayShort = new Intl.DateTimeFormat("en-US", {
+    timeZone: timezone,
+    weekday: "short",
+  })
+    .formatToParts(d)
+    .find((p) => p.type === "weekday")?.value;
+  const idx = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].indexOf(
+    weekdayShort ?? "Sun",
+  );
+  return `${WEEKDAYS[idx >= 0 ? idx : 0]}, ${get("day")}/${get("month")}/${get("year")}`;
 }
 
-function formatTime(d: Date) {
-  return d.toLocaleTimeString("pt-BR", {
+function formatTime(d: Date, timezone: string) {
+  return new Intl.DateTimeFormat("pt-BR", {
+    timeZone: timezone,
     hour: "2-digit",
     minute: "2-digit",
-  });
+    hour12: false,
+  }).format(d);
 }
 
 function formatMoney(cents: number) {
@@ -138,7 +154,7 @@ export function BookingSuccess(props: Props) {
                 Data
               </span>
               <span className="truncate text-text-sm font-semibold text-[var(--color-text-primary)] sm:text-text-md">
-                {formatLongDate(start)}
+                {formatLongDate(start, props.timezone)}
               </span>
             </div>
           </div>
@@ -153,7 +169,7 @@ export function BookingSuccess(props: Props) {
                 Horário
               </span>
               <span className="text-text-sm font-semibold tabular-nums text-[var(--color-text-primary)] sm:text-text-md">
-                {formatTime(start)} ({props.durationMinutes} min)
+                {formatTime(start, props.timezone)} ({props.durationMinutes} min)
               </span>
             </div>
           </div>

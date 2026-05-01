@@ -516,7 +516,9 @@ export type Database = {
           cnpj: string | null
           created_at: string
           email: string | null
+          gallery: Json
           id: string
+          links: Json
           logo_url: string | null
           name: string
           phone: string | null
@@ -525,6 +527,7 @@ export type Database = {
           public_booking_enabled: boolean
           slug: string
           status: Database["public"]["Enums"]["tenant_status"]
+          timezone: string
           trial_ends_at: string | null
           updated_at: string
         }
@@ -533,7 +536,9 @@ export type Database = {
           cnpj?: string | null
           created_at?: string
           email?: string | null
+          gallery?: Json
           id?: string
+          links?: Json
           logo_url?: string | null
           name: string
           phone?: string | null
@@ -542,6 +547,7 @@ export type Database = {
           public_booking_enabled?: boolean
           slug: string
           status?: Database["public"]["Enums"]["tenant_status"]
+          timezone?: string
           trial_ends_at?: string | null
           updated_at?: string
         }
@@ -550,7 +556,9 @@ export type Database = {
           cnpj?: string | null
           created_at?: string
           email?: string | null
+          gallery?: Json
           id?: string
+          links?: Json
           logo_url?: string | null
           name?: string
           phone?: string | null
@@ -559,6 +567,7 @@ export type Database = {
           public_booking_enabled?: boolean
           slug?: string
           status?: Database["public"]["Enums"]["tenant_status"]
+          timezone?: string
           trial_ends_at?: string | null
           updated_at?: string
         }

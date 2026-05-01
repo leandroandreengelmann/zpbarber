@@ -2,15 +2,20 @@ import {
   CalendarPlusIcon,
   ClockIcon,
   EnvelopeSimpleIcon,
+  FacebookLogoIcon,
+  GlobeIcon,
+  InstagramLogoIcon,
+  LinkSimpleIcon,
   MapPinIcon,
   PhoneIcon,
   ScissorsIcon,
   SignInIcon,
+  TiktokLogoIcon,
   UsersThreeIcon,
   WhatsappLogoIcon,
+  YoutubeLogoIcon,
 } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
-import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/server";
@@ -26,7 +31,25 @@ type Address = {
   state?: string;
 };
 
+type ShopLink = { label: string; url: string };
+type ShopPhoto = { url: string; caption?: string };
+
 const WEEKDAYS = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
+
+function linkIcon(url: string) {
+  const u = url.toLowerCase();
+  if (u.includes("instagram.com")) return InstagramLogoIcon;
+  if (u.includes("facebook.com") || u.includes("fb.com")) return FacebookLogoIcon;
+  if (u.includes("tiktok.com")) return TiktokLogoIcon;
+  if (u.includes("youtube.com") || u.includes("youtu.be")) return YoutubeLogoIcon;
+  if (u.includes("wa.me") || u.includes("whatsapp.com")) return WhatsappLogoIcon;
+  if (u.startsWith("mailto:")) return EnvelopeSimpleIcon;
+  if (u.startsWith("tel:")) return PhoneIcon;
+  if (u.includes("maps.google") || u.includes("goo.gl/maps") || u.includes("maps.app.goo.gl"))
+    return MapPinIcon;
+  if (u.startsWith("http")) return GlobeIcon;
+  return LinkSimpleIcon;
+}
 
 function formatAddressLine(a?: Address | null) {
   if (!a) return null;
@@ -87,6 +110,8 @@ export default async function PublicShopPage({
           primary_color: string | null;
           public_booking_enabled: boolean;
           is_open: boolean;
+          links?: ShopLink[];
+          gallery?: ShopPhoto[];
         };
         services: { id: string; name: string; duration_minutes: number; price_cents: number }[];
         barbers: { id: string; full_name: string | null; avatar_url: string | null }[];
@@ -105,6 +130,8 @@ export default async function PublicShopPage({
   const hours = payload.business_hours ?? [];
   const services = payload.services ?? [];
   const barbers = payload.barbers ?? [];
+  const links = (shop.links ?? []).filter((l) => l.label && l.url);
+  const gallery = (shop.gallery ?? []).filter((p) => p.url);
 
   const address = formatAddressLine(shop.address as Address | null);
   const location = shortLocation(shop.address as Address | null);
@@ -116,14 +143,6 @@ export default async function PublicShopPage({
   return (
     <div className="grid gap-8 sm:gap-12">
       <section className="relative overflow-hidden rounded-3xl border border-[var(--color-border-secondary)] bg-gradient-to-br from-[var(--color-blue-50)] via-[var(--color-bg-primary)] to-[var(--color-bg-primary)] px-5 py-8 sm:px-10 sm:py-12 dark:from-[var(--color-blue-500)]/10">
-        <Image
-          src="/symbol.png"
-          alt=""
-          aria-hidden
-          width={320}
-          height={320}
-          className="pointer-events-none absolute -right-16 -top-12 size-72 select-none opacity-[0.07] sm:size-96 sm:opacity-[0.09]"
-        />
         <div className="relative grid gap-5">
           <div className="flex flex-wrap items-center gap-2">
             <span
@@ -264,6 +283,75 @@ export default async function PublicShopPage({
                 </Card>
               </li>
             ))}
+          </ul>
+        </section>
+      )}
+
+      {gallery.length > 0 && (
+        <section className="grid gap-4 sm:gap-6">
+          <div className="grid gap-1">
+            <h2 className="text-display-xs font-semibold tracking-tight text-[var(--color-text-primary)]">
+              Galeria
+            </h2>
+            <p className="text-text-sm text-[var(--color-text-tertiary)]">
+              Conheça o ambiente, cortes e equipe.
+            </p>
+          </div>
+          <ul className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 md:grid-cols-4">
+            {gallery.map((p, i) => (
+              <li
+                key={`${p.url}-${i}`}
+                className="overflow-hidden rounded-xl border border-[var(--color-border-secondary)] bg-[var(--color-bg-primary)]"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={p.url}
+                  alt={p.caption || ""}
+                  className="aspect-square w-full object-cover transition-transform hover:scale-[1.02]"
+                  loading="lazy"
+                />
+                {p.caption && (
+                  <p className="px-2.5 py-1.5 text-text-xs text-[var(--color-text-tertiary)]">
+                    {p.caption}
+                  </p>
+                )}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {links.length > 0 && (
+        <section className="grid gap-4 sm:gap-6">
+          <div className="grid gap-1">
+            <h2 className="text-display-xs font-semibold tracking-tight text-[var(--color-text-primary)]">
+              Links
+            </h2>
+            <p className="text-text-sm text-[var(--color-text-tertiary)]">
+              Siga, mande mensagem ou veja mais.
+            </p>
+          </div>
+          <ul className="grid gap-2.5 sm:grid-cols-2">
+            {links.map((l, i) => {
+              const Icon = linkIcon(l.url);
+              return (
+                <li key={`${l.url}-${i}`}>
+                  <a
+                    href={l.url}
+                    target={l.url.startsWith("http") ? "_blank" : undefined}
+                    rel={l.url.startsWith("http") ? "noopener noreferrer" : undefined}
+                    className="flex h-12 items-center gap-3 rounded-xl border border-[var(--color-border-secondary)] bg-[var(--color-bg-primary)] px-3.5 transition-colors hover:bg-[var(--color-bg-secondary)]"
+                  >
+                    <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-[var(--color-blue-50)] text-[var(--color-blue-600)] dark:bg-[var(--color-blue-500)]/15 dark:text-[var(--color-blue-300)]">
+                      <Icon size={20} weight="duotone" />
+                    </div>
+                    <span className="truncate text-text-md font-medium text-[var(--color-text-primary)]">
+                      {l.label}
+                    </span>
+                  </a>
+                </li>
+              );
+            })}
           </ul>
         </section>
       )}

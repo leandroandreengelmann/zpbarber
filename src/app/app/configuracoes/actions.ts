@@ -20,8 +20,26 @@ export async function updateShopSettingsAction(
   }
   const shopId = membership.barbershop!.id;
 
+  const linksRaw = String(formData.get("links_json") ?? "[]");
+  const galleryRaw = String(formData.get("gallery_json") ?? "[]");
+  let linksParsed: unknown = [];
+  let galleryParsed: unknown = [];
+  try {
+    linksParsed = JSON.parse(linksRaw);
+  } catch {
+    linksParsed = [];
+  }
+  try {
+    galleryParsed = JSON.parse(galleryRaw);
+  } catch {
+    galleryParsed = [];
+  }
+
   const parsed = shopSettingsSchema.safeParse({
     name: formData.get("name") ?? "",
+    timezone: formData.get("timezone") ?? "America/Sao_Paulo",
+    links: linksParsed,
+    gallery: galleryParsed,
     cnpj: formData.get("cnpj") ?? "",
     phone: formData.get("phone") ?? "",
     email: formData.get("email") ?? "",
@@ -47,6 +65,9 @@ export async function updateShopSettingsAction(
     .from("barbershops")
     .update({
       name: v.name,
+      timezone: v.timezone,
+      links: v.links,
+      gallery: v.gallery,
       cnpj: v.cnpj || null,
       phone: v.phone || null,
       email: v.email || null,

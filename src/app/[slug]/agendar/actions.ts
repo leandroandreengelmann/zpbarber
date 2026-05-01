@@ -16,6 +16,7 @@ export type BookingShop = {
   primary_color: string | null;
   public_booking_enabled: boolean;
   is_open: boolean;
+  timezone: string;
 };
 
 export type BookingService = {
@@ -72,6 +73,32 @@ export async function loadAvailableSlotsAction(
   });
   if (error || !data) return [];
   return data as unknown as string[];
+}
+
+export async function loadAvailableDaysAction(
+  slug: string,
+  serviceId: string,
+  barberId: string,
+  fromISO: string,
+  days = 14
+): Promise<string[]> {
+  const supabase = await createClient();
+  const { data, error } = await (
+    supabase as unknown as {
+      rpc: (
+        name: string,
+        args: Record<string, unknown>,
+      ) => Promise<{ data: string[] | null; error: unknown }>;
+    }
+  ).rpc("fn_public_available_days", {
+    p_slug: slug,
+    p_service_id: serviceId,
+    p_barber_id: barberId,
+    p_from: fromISO,
+    p_days: days,
+  });
+  if (error || !data) return [];
+  return data;
 }
 
 type CreateState = {

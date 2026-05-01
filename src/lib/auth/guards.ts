@@ -43,7 +43,7 @@ export async function requireBarbershop() {
     const supabase = await createClient();
     const { data: shop } = await supabase
       .from("barbershops")
-      .select("id, name, slug, status")
+      .select("id, name, slug, status, timezone")
       .eq("id", tenantId)
       .maybeSingle();
     if (!shop) redirect("/admin/barbershops");

@@ -1,9 +1,16 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ThemeToggle } from "@/components/theme-toggle";
+
+function shopInitials(name: string) {
+  const words = name.trim().split(/\s+/).filter(Boolean);
+  if (words.length === 0) return "?";
+  const first = words[0]?.[0] ?? "";
+  const second = words[1]?.[0] ?? "";
+  return (first + second).toUpperCase();
+}
 
 const RESERVED = new Set([
   "admin",
@@ -55,14 +62,16 @@ export default async function PublicShopLayout({
                 className="size-24 rounded-xl object-cover sm:size-32"
               />
             ) : (
-              <Image
-                src="/symbol.png"
-                alt=""
-                width={128}
-                height={128}
-                className="size-24 object-contain sm:size-32"
-                priority
-              />
+              <div
+                aria-hidden
+                className="flex size-24 items-center justify-center rounded-xl text-display-md font-bold text-white sm:size-32 sm:text-display-lg"
+                style={{
+                  backgroundColor:
+                    shop.primary_color || "var(--color-blue-600)",
+                }}
+              >
+                {shopInitials(shop.name)}
+              </div>
             )}
             <span className="text-display-xs font-bold tracking-tight text-[var(--color-text-primary)] sm:text-display-sm">
               {shop.name}
