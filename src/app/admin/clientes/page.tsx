@@ -36,6 +36,9 @@ type ClientItem = {
   last_appointment_at: string | null;
   last_shop_name: string | null;
   total_spent_cents: number;
+  created_by_shop_id: string | null;
+  created_by_shop_name: string | null;
+  created_at: string | null;
 };
 
 type ListResponse = {
@@ -129,6 +132,7 @@ export default async function AdminClientsPage({
                   <TableHead>Cliente</TableHead>
                   <TableHead>Telefone</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead>Cadastrado por</TableHead>
                   <TableHead className="text-right">Barbearias</TableHead>
                   <TableHead className="text-right">Atendimentos</TableHead>
                   <TableHead>Último atendimento</TableHead>
@@ -161,6 +165,20 @@ export default async function AdminClientsPage({
                       <Badge variant={c.has_account ? "default" : "outline"}>
                         {c.has_account ? "Com conta" : "Sem conta"}
                       </Badge>
+                    </TableCell>
+                    <TableCell className="text-text-sm text-[var(--color-text-secondary)]">
+                      {c.created_by_shop_name ? (
+                        <div className="inline-flex items-center gap-1.5">
+                          <StorefrontIcon
+                            size={14}
+                            weight="duotone"
+                            className="text-[var(--color-fg-quaternary)]"
+                          />
+                          <span className="truncate">{c.created_by_shop_name}</span>
+                        </div>
+                      ) : (
+                        "—"
+                      )}
                     </TableCell>
                     <TableCell className="text-right tabular-nums">
                       <div className="inline-flex items-center gap-1.5 text-text-sm text-[var(--color-text-secondary)]">

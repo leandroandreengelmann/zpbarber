@@ -27,6 +27,8 @@ import {
 } from "@/lib/format";
 import { dayBoundsUTC, todayLocalISO } from "./agenda/_lib/calendar";
 import { AnnouncementsBanner } from "@/components/announcements/banner";
+import { ShareShopBanner } from "./_components/share-shop-banner";
+import { getAppBaseUrl } from "@/lib/platform-settings";
 
 type AppointmentRow = {
   id: string;
@@ -47,6 +49,8 @@ export default async function AppDashboardPage() {
   const { startISO, endISO } = dayBoundsUTC(today);
 
   const supabase = await createClient();
+  const appBaseUrl = await getAppBaseUrl();
+  const publicUrl = shop.slug ? `${appBaseUrl}/${shop.slug}` : null;
 
   let apptQuery = supabase
     .from("appointments")
@@ -214,6 +218,10 @@ export default async function AppDashboardPage() {
       </div>
 
       <AnnouncementsBanner />
+
+      {publicUrl && (
+        <ShareShopBanner shopName={shop.name} publicUrl={publicUrl} />
+      )}
 
       <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         {KPIS.map((kpi) => {
