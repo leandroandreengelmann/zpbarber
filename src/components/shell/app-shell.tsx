@@ -10,6 +10,7 @@ export function AppShell({
   topbarTitle,
   topbarSubtitle,
   email,
+  timezone,
   bottomNavPrimary,
   children,
 }: {
@@ -18,6 +19,7 @@ export function AppShell({
   topbarTitle: string;
   topbarSubtitle?: string;
   email?: string | null;
+  timezone?: string;
   bottomNavPrimary?: BottomNavItem[];
   children: ReactNode;
 }) {
@@ -35,7 +37,7 @@ export function AppShell({
         </div>
       </aside>
       <main className="flex min-w-0 flex-1 flex-col">
-        <Topbar title={topbarTitle} subtitle={topbarSubtitle} email={email} />
+        <Topbar title={topbarTitle} subtitle={topbarSubtitle} email={email} timezone={timezone} />
         <div
           className="flex-1 overflow-y-auto p-4 md:p-8"
           style={{

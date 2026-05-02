@@ -4,15 +4,18 @@ import { signOutAction } from "@/app/auth/login/actions";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Separator } from "@/components/ui/separator";
+import { LocalClock } from "./local-clock";
 
 export function Topbar({
   title,
   subtitle,
   email,
+  timezone,
 }: {
   title: string;
   subtitle?: string;
   email?: string | null;
+  timezone?: string;
 }) {
   return (
     <header
@@ -28,6 +31,7 @@ export function Topbar({
         )}
       </div>
       <div className="flex items-center gap-2">
+        {timezone && <LocalClock timezone={timezone} />}
         <ThemeToggle />
         <Separator orientation="vertical" className="!h-5" />
         <Link

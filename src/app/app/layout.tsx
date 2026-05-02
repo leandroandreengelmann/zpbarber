@@ -127,6 +127,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
       topbarTitle={shop.name}
       topbarSubtitle={ROLE_LABEL[membership.role] ?? membership.role}
       email={user.email}
+      timezone={shop.timezone ?? undefined}
     >
       {isImpersonating && <ImpersonationBanner shopName={shop.name} />}
       {showTrialEnding && (
