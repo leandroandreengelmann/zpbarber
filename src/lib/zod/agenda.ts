@@ -31,11 +31,7 @@ export const appointmentSchema = z.object({
   scheduled_at: z
     .string()
     .min(1, "informe a data e hora")
-    .refine((v) => !Number.isNaN(Date.parse(v)), "data inválida")
-    .refine(
-      (v) => Date.parse(v) >= Date.now() - 60_000,
-      "não é possível agendar no passado"
-    ),
+    .refine((v) => !Number.isNaN(Date.parse(v)), "data inválida"),
   duration_minutes: z.coerce.number().int().min(5, "min 5").max(600, "max 600"),
   price_cents: z.coerce.number().int().min(0, "preço inválido"),
   notes: z.string().trim().max(500).optional().default(""),

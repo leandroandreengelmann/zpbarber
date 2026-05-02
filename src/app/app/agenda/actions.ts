@@ -97,9 +97,6 @@ export async function createAppointmentAction(
     return { error: "Você só pode criar agendamentos para si mesmo." };
   }
   const startUtc = localToUtcIso(d.scheduled_at, ctx.timezone);
-  if (new Date(startUtc).getTime() < Date.now() - 60_000) {
-    return { error: "Não é possível agendar no passado." };
-  }
   const supabase = await createClient();
 
   const startIso = startUtc;
