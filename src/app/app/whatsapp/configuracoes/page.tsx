@@ -33,6 +33,10 @@ export default async function WhatsappConfiguracoesPage() {
     phone_number: null,
     last_qr: null,
     last_connected_at: null,
+    notify_phone: null,
+    notify_enabled: false,
+    notify_new_appointment: true,
+    notify_new_payment: true,
   };
 
   return (
@@ -69,6 +73,10 @@ export default async function WhatsappConfiguracoesPage() {
           business_hours_start: settings.business_hours_start,
           business_hours_end: settings.business_hours_end,
           business_hours_only: settings.business_hours_only,
+          notify_phone: settings.notify_phone ?? "",
+          notify_enabled: settings.notify_enabled ?? false,
+          notify_new_appointment: settings.notify_new_appointment ?? true,
+          notify_new_payment: settings.notify_new_payment ?? true,
         }}
       />
     </div>

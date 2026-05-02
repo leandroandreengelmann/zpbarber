@@ -2298,6 +2298,10 @@ export type Database = {
           last_disconnected_at: string | null
           last_qr: string | null
           last_qr_at: string | null
+          notify_enabled: boolean
+          notify_new_appointment: boolean
+          notify_new_payment: boolean
+          notify_phone: string | null
           phone_number: string | null
           trigger_birthday: boolean
           trigger_birthday_hour: number
@@ -2321,6 +2325,10 @@ export type Database = {
           last_disconnected_at?: string | null
           last_qr?: string | null
           last_qr_at?: string | null
+          notify_enabled?: boolean
+          notify_new_appointment?: boolean
+          notify_new_payment?: boolean
+          notify_phone?: string | null
           phone_number?: string | null
           trigger_birthday?: boolean
           trigger_birthday_hour?: number
@@ -2344,6 +2352,10 @@ export type Database = {
           last_disconnected_at?: string | null
           last_qr?: string | null
           last_qr_at?: string | null
+          notify_enabled?: boolean
+          notify_new_appointment?: boolean
+          notify_new_payment?: boolean
+          notify_phone?: string | null
           phone_number?: string | null
           trigger_birthday?: boolean
           trigger_birthday_hour?: number
@@ -2733,6 +2745,8 @@ export type Database = {
         | "post_service"
         | "birthday"
         | "loyalty_redemption"
+        | "owner_new_appointment"
+        | "owner_new_payment"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2925,6 +2939,8 @@ export const Constants = {
         "post_service",
         "birthday",
         "loyalty_redemption",
+        "owner_new_appointment",
+        "owner_new_payment",
       ],
     },
   },

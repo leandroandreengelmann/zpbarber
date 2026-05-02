@@ -303,14 +303,27 @@ export async function saveSettingsAction(
     business_hours_start: fd.get("business_hours_start") ?? "08:00",
     business_hours_end: fd.get("business_hours_end") ?? "20:00",
     business_hours_only: fd.get("business_hours_only") === "on",
+    notify_phone: fd.get("notify_phone") ?? "",
+    notify_enabled: fd.get("notify_enabled") === "on",
+    notify_new_appointment: fd.get("notify_new_appointment") === "on",
+    notify_new_payment: fd.get("notify_new_payment") === "on",
   });
   if (!parsed.success) return { error: flatten(parsed.error.issues) };
+
+  const { notify_phone, ...rest } = parsed.data;
+  const normalizedPhone = notify_phone
+    ? normalizeBrazilNumber(notify_phone)
+    : "";
 
   const supabase = await createClient();
   const { error } = await supabase
     .from("whatsapp_settings")
     .upsert(
-      { barbershop_id: c.shopId, ...parsed.data },
+      {
+        barbershop_id: c.shopId,
+        ...rest,
+        notify_phone: normalizedPhone || null,
+      },
       { onConflict: "barbershop_id" }
     );
   if (error) return { error: error.message };

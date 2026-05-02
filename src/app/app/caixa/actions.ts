@@ -9,6 +9,7 @@ import {
   openSessionSchema,
 } from "@/lib/zod/caixa";
 import { enqueueWhatsappMessage } from "@/lib/whatsapp/enqueue";
+import { dispatchOwnerPaymentMessage } from "@/lib/whatsapp/dispatch";
 import { logAudit } from "@/lib/audit/log";
 import { getAppBaseUrl } from "@/lib/platform-settings";
 import { isSessionExpired } from "@/lib/caixa/cutoff";
@@ -462,6 +463,9 @@ export async function createSaleAction(_prev: State, fd: FormData): Promise<Stat
       appointmentId: d.appointment_id || null,
     });
   }
+
+  // Aviso pro celular do dono (se estiver ligado)
+  await dispatchOwnerPaymentMessage({ shopId: c.shopId, saleId });
 
   revalidatePath("/app/caixa");
   revalidatePath("/app/agenda");

@@ -7,6 +7,8 @@ export const WHATSAPP_TRIGGERS = [
   "post_service",
   "birthday",
   "loyalty_redemption",
+  "owner_new_appointment",
+  "owner_new_payment",
 ] as const;
 export type WhatsappTrigger = (typeof WHATSAPP_TRIGGERS)[number];
 
@@ -17,6 +19,8 @@ export const WHATSAPP_TRIGGER_LABEL: Record<WhatsappTrigger, string> = {
   post_service: "Pós-atendimento",
   birthday: "Aniversário",
   loyalty_redemption: "Resgate de fidelidade",
+  owner_new_appointment: "Aviso ao dono — novo agendamento",
+  owner_new_payment: "Aviso ao dono — novo recebimento",
 };
 
 export const WHATSAPP_CONNECTION_STATUS = [
@@ -46,6 +50,15 @@ export const whatsappSettingsSchema = z.object({
     .regex(/^\d{2}:\d{2}(:\d{2})?$/, "horário inválido")
     .default("20:00"),
   business_hours_only: z.coerce.boolean().default(true),
+  notify_phone: z
+    .string()
+    .trim()
+    .max(40, "telefone muito longo")
+    .optional()
+    .default(""),
+  notify_enabled: z.coerce.boolean().default(false),
+  notify_new_appointment: z.coerce.boolean().default(true),
+  notify_new_payment: z.coerce.boolean().default(true),
 });
 export type WhatsappSettingsInput = z.infer<typeof whatsappSettingsSchema>;
 
@@ -97,4 +110,22 @@ export const TEMPLATE_VARIABLES: Record<WhatsappTrigger, string[]> = {
   post_service: ["cliente", "barbeiro", "link_avaliacao", "barbearia"],
   birthday: ["cliente", "pontos_bonus", "barbearia"],
   loyalty_redemption: ["cliente", "recompensa", "codigo", "barbearia"],
+  owner_new_appointment: [
+    "cliente",
+    "data",
+    "hora",
+    "barbeiro",
+    "servicos",
+    "valor",
+    "barbearia",
+    "origem",
+  ],
+  owner_new_payment: [
+    "cliente",
+    "valor",
+    "servico",
+    "barbeiro",
+    "forma_pagamento",
+    "barbearia",
+  ],
 };

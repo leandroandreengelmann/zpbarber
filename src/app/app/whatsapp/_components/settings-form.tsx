@@ -22,6 +22,10 @@ type Settings = {
   business_hours_start: string;
   business_hours_end: string;
   business_hours_only: boolean;
+  notify_phone: string;
+  notify_enabled: boolean;
+  notify_new_appointment: boolean;
+  notify_new_payment: boolean;
 };
 
 export function SettingsForm({ initial: init }: { initial: Settings }) {
@@ -86,6 +90,46 @@ export function SettingsForm({ initial: init }: { initial: Settings }) {
             defaultValue={init.trigger_birthday_hour}
           />
         </ToggleRow>
+      </Section>
+
+      <Section
+        title="Notificações pro seu WhatsApp"
+        subtitle="Receba avisos no seu número particular toda vez que algo importante acontecer."
+      >
+        <div className="grid gap-1.5">
+          <Label htmlFor="notify_phone" className="text-text-xs">
+            Seu WhatsApp pessoal (com DDD)
+          </Label>
+          <Input
+            id="notify_phone"
+            name="notify_phone"
+            placeholder="65 99999-9999"
+            defaultValue={init.notify_phone}
+            className="h-10"
+          />
+          <span className="text-text-xs text-[var(--color-text-tertiary)]">
+            As mensagens serão enviadas a partir do número conectado da
+            barbearia para esse número.
+          </span>
+        </div>
+        <ToggleRow
+          name="notify_enabled"
+          label="Receber avisos no meu WhatsApp"
+          help="Liga/desliga geral. Se estiver desligado, nada chega no seu número."
+          defaultChecked={init.notify_enabled}
+        />
+        <ToggleRow
+          name="notify_new_appointment"
+          label="Aviso a cada novo agendamento"
+          help="Inclui agendamentos online (cliente) e os criados na agenda."
+          defaultChecked={init.notify_new_appointment}
+        />
+        <ToggleRow
+          name="notify_new_payment"
+          label="Aviso a cada novo recebimento no caixa"
+          help="Avisa quando uma venda é registrada — cliente, valor, serviço e forma de pagamento."
+          defaultChecked={init.notify_new_payment}
+        />
       </Section>
 
       <Section

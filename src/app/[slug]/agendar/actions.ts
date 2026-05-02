@@ -181,6 +181,7 @@ export async function createPublicAppointmentAction(
       barberId: result.barber_id,
       scheduledAt: new Date(v.scheduled_at),
       priceCents: serviceRes.data.price_cents,
+      origem: "online",
     });
 
     // Push para gestor(es) e barbeiro responsável

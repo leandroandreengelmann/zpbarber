@@ -144,7 +144,7 @@ export async function createAppointmentAction(
     .single();
   if (error) return { error: translateAppointmentError(error.message) };
 
-  // WhatsApp: confirmação + lembrete agendado
+  // WhatsApp: confirmação + lembrete agendado + aviso pro dono
   await dispatchAppointmentMessages({
     shopId: ctx.shopId,
     appointmentId: created.id as string,
@@ -153,6 +153,7 @@ export async function createAppointmentAction(
     barberId: d.barber_id || null,
     scheduledAt: new Date(startIso),
     priceCents: d.price_cents,
+    origem: "manual",
   });
 
   revalidatePath("/app/agenda");
