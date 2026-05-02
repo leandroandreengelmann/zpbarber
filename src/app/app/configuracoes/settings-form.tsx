@@ -201,8 +201,8 @@ export function SettingsForm({
               if (f) handleLogoFile(f);
             }}
           />
-          <div className="flex items-center gap-4">
-            <div className="flex size-24 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[var(--color-border-secondary)] bg-[var(--color-bg-primary)]">
+          <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:gap-4">
+            <div className="flex size-24 shrink-0 items-center justify-center self-center overflow-hidden rounded-xl border border-[var(--color-border-secondary)] bg-[var(--color-bg-primary)] sm:self-auto">
               {logoUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -218,11 +218,12 @@ export function SettingsForm({
                 />
               )}
             </div>
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
               <Button
                 type="button"
                 disabled={disabled || logoUploading}
                 onClick={() => logoInputRef.current?.click()}
+                className="w-full sm:w-auto"
               >
                 <CameraIcon size={20} weight="duotone" />
                 {logoUploading
@@ -238,7 +239,7 @@ export function SettingsForm({
                   size="sm"
                   disabled={disabled || logoUploading}
                   onClick={() => setLogoUrl("")}
-                  className="text-[var(--color-text-error-primary)]"
+                  className="w-full text-[var(--color-text-error-primary)] sm:w-auto"
                 >
                   <TrashIcon size={18} weight="duotone" />
                   Remover
@@ -286,20 +287,20 @@ export function SettingsForm({
           <div className="grid gap-1.5">
             <Label htmlFor="primary_color">Cor primária</Label>
             <div className="flex items-center gap-2">
+              {initial.primary_color && (
+                <div
+                  aria-hidden
+                  className="size-11 shrink-0 rounded-md border border-border"
+                  style={{ backgroundColor: initial.primary_color }}
+                />
+              )}
               <Input
                 id="primary_color"
                 name="primary_color"
                 placeholder="#1570ef"
                 defaultValue={initial.primary_color ?? ""}
-                className="font-mono"
+                className="min-w-0 font-mono"
               />
-              {initial.primary_color && (
-                <div
-                  aria-hidden
-                  className="size-9 shrink-0 rounded-md border border-border"
-                  style={{ backgroundColor: initial.primary_color }}
-                />
-              )}
             </div>
           </div>
         </div>
@@ -307,7 +308,7 @@ export function SettingsForm({
         <Separator />
 
         <div className="grid gap-3">
-          <div className="flex items-center justify-between gap-2">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <h3 className="text-sm font-semibold">Links da página pública</h3>
               <p className="text-text-xs text-[var(--color-text-tertiary)]">
@@ -320,6 +321,7 @@ export function SettingsForm({
               size="sm"
               onClick={addLink}
               disabled={disabled || links.length >= 12}
+              className="w-full sm:w-auto"
             >
               <PlusIcon size={18} weight="bold" />
               Adicionar
@@ -375,7 +377,7 @@ export function SettingsForm({
         <Separator />
 
         <div className="grid gap-3">
-          <div className="flex items-center justify-between gap-2">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <h3 className="text-sm font-semibold">Galeria de fotos</h3>
               <p className="text-text-xs text-[var(--color-text-tertiary)]">
@@ -388,6 +390,7 @@ export function SettingsForm({
               size="sm"
               onClick={() => galleryInputRef.current?.click()}
               disabled={disabled || uploading || gallery.length >= 24}
+              className="w-full sm:w-auto"
             >
               <CameraIcon size={18} weight="duotone" />
               {uploading ? "Enviando..." : "Adicionar fotos"}
@@ -448,12 +451,12 @@ export function SettingsForm({
 
         <div className="grid gap-4">
           <h3 className="text-sm font-semibold">Endereço</h3>
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3">
             <div className="grid gap-1.5">
               <Label htmlFor="address.cep">CEP</Label>
               <Input id="address.cep" name="address.cep" defaultValue={a.cep ?? ""} placeholder="00000-000" />
             </div>
-            <div className="grid gap-1.5 md:col-span-2">
+            <div className="col-span-2 grid gap-1.5 md:col-span-2">
               <Label htmlFor="address.street">Rua</Label>
               <Input id="address.street" name="address.street" defaultValue={a.street ?? ""} />
             </div>
@@ -461,7 +464,7 @@ export function SettingsForm({
               <Label htmlFor="address.number">Número</Label>
               <Input id="address.number" name="address.number" defaultValue={a.number ?? ""} />
             </div>
-            <div className="grid gap-1.5 md:col-span-2">
+            <div className="col-span-2 grid gap-1.5 md:col-span-2">
               <Label htmlFor="address.complement">Complemento</Label>
               <Input
                 id="address.complement"
@@ -469,7 +472,7 @@ export function SettingsForm({
                 defaultValue={a.complement ?? ""}
               />
             </div>
-            <div className="grid gap-1.5">
+            <div className="col-span-2 grid gap-1.5 md:col-span-1">
               <Label htmlFor="address.neighborhood">Bairro</Label>
               <Input
                 id="address.neighborhood"
@@ -495,10 +498,11 @@ export function SettingsForm({
         </div>
       </fieldset>
 
-      <div className="flex justify-end">
+      <div className="sm:flex sm:justify-end">
         <Button
           type="submit"
           disabled={pending || disabled || uploading || logoUploading}
+          className="w-full sm:w-auto"
         >
           <FloppyDiskIcon size={28} weight="duotone" />
           {pending ? "Salvando..." : "Salvar configurações"}

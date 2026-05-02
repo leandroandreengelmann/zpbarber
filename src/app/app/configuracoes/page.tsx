@@ -42,10 +42,10 @@ export default async function ConfiguracoesPage() {
   return (
     <div className="mx-auto grid w-full max-w-3xl gap-6">
       <div className="grid gap-1">
-        <h1 className="text-display-xs font-semibold tracking-tight text-[var(--color-text-primary)]">
+        <h1 className="text-text-xl font-semibold tracking-tight text-[var(--color-text-primary)] sm:text-display-xs">
           Configurações
         </h1>
-        <p className="text-text-md text-[var(--color-text-tertiary)]">
+        <p className="text-text-sm text-[var(--color-text-tertiary)] sm:text-text-md">
           Atualize os dados da barbearia, endereço e horário de funcionamento.
         </p>
       </div>
@@ -63,8 +63,8 @@ export default async function ConfiguracoesPage() {
 
       <Card>
         <CardHeader>
-          <div className="flex items-center gap-2">
-            <div className="flex size-8 items-center justify-center rounded-lg bg-[var(--color-blue-50)] text-[var(--color-blue-600)]">
+          <div className="flex items-start gap-2.5">
+            <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-[var(--color-blue-50)] text-[var(--color-blue-600)]">
               <StorefrontIcon size={28} weight="duotone" />
             </div>
             <div>
@@ -84,8 +84,8 @@ export default async function ConfiguracoesPage() {
 
       <Card>
         <CardHeader>
-          <div className="flex items-center gap-2">
-            <div className="flex size-8 items-center justify-center rounded-lg bg-[var(--color-blue-50)] text-[var(--color-blue-600)]">
+          <div className="flex items-start gap-2.5">
+            <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-[var(--color-blue-50)] text-[var(--color-blue-600)]">
               <CalendarPlusIcon size={28} weight="duotone" />
             </div>
             <div>
@@ -110,8 +110,8 @@ export default async function ConfiguracoesPage() {
 
       <Card>
         <CardHeader>
-          <div className="flex items-center gap-2">
-            <div className="flex size-8 items-center justify-center rounded-lg bg-[var(--color-blue-50)] text-[var(--color-blue-600)]">
+          <div className="flex items-start gap-2.5">
+            <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-[var(--color-blue-50)] text-[var(--color-blue-600)]">
               <ClockIcon size={28} weight="duotone" />
             </div>
             <div>

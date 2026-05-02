@@ -81,100 +81,109 @@ export function HoursForm({
 
   return (
     <form action={formAction} className="grid gap-4">
-      <fieldset disabled={disabled || pending} className="grid gap-2">
+      <fieldset disabled={disabled || pending} className="grid gap-2.5">
         {rows.map((row) => {
           const label = WEEKDAYS[row.weekday];
+          const isOpen = !row.is_closed;
           return (
             <div
               key={row.weekday}
-              className="grid gap-3 rounded-lg border border-border bg-card px-4 py-3"
+              className="grid gap-3 rounded-lg border border-border bg-card px-3 py-3 sm:px-4"
             >
-              <div className="grid items-center gap-3 md:grid-cols-[120px_120px_1fr_1fr]">
-                <div className="text-sm font-medium">{label}</div>
-                <label className="flex items-center gap-2 text-sm text-muted-foreground">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-text-sm font-semibold text-[var(--color-text-primary)]">
+                  {label}
+                </span>
+                <label className="flex items-center gap-2 text-text-xs text-muted-foreground">
+                  <span>{isOpen ? "Aberto" : "Fechado"}</span>
                   <Switch
                     name={`day_${row.weekday}_closed`}
                     checked={row.is_closed}
                     onCheckedChange={(v) => update(row.weekday, { is_closed: !!v })}
                     value="on"
                   />
-                  Fechado
                 </label>
-                <div className="grid grid-cols-2 gap-2 md:col-span-2">
-                  <div className="grid gap-1">
-                    <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
-                      Abre
-                    </span>
-                    <Input
-                      name={`day_${row.weekday}_opens`}
-                      type="time"
-                      value={row.opens}
-                      onChange={(e) => update(row.weekday, { opens: e.target.value })}
-                      disabled={row.is_closed}
-                    />
-                  </div>
-                  <div className="grid gap-1">
-                    <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
-                      Fecha
-                    </span>
-                    <Input
-                      name={`day_${row.weekday}_closes`}
-                      type="time"
-                      value={row.closes}
-                      onChange={(e) => update(row.weekday, { closes: e.target.value })}
-                      disabled={row.is_closed}
-                    />
-                  </div>
-                </div>
               </div>
 
-              {!row.is_closed && (
-                <div className="grid gap-2 border-t border-dashed border-border pt-3 md:grid-cols-[120px_120px_1fr_1fr]">
-                  <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
-                    Pausa
-                  </span>
-                  <label className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Switch
-                      checked={row.has_break}
-                      onCheckedChange={(v) => update(row.weekday, { has_break: !!v })}
-                    />
-                    Tem pausa
-                  </label>
-                  <div className="grid grid-cols-2 gap-2 md:col-span-2">
-                    <div className="grid gap-1">
+              {isOpen && (
+                <>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="grid gap-1 min-w-0">
                       <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
-                        Começa
+                        Abre
                       </span>
                       <Input
-                        name={`day_${row.weekday}_break_starts`}
+                        name={`day_${row.weekday}_opens`}
                         type="time"
-                        value={row.has_break ? row.break_starts : ""}
-                        onChange={(e) => update(row.weekday, { break_starts: e.target.value })}
-                        disabled={!row.has_break}
+                        value={row.opens}
+                        onChange={(e) => update(row.weekday, { opens: e.target.value })}
+                        className="min-w-0"
                       />
                     </div>
-                    <div className="grid gap-1">
+                    <div className="grid gap-1 min-w-0">
                       <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
-                        Termina
+                        Fecha
                       </span>
                       <Input
-                        name={`day_${row.weekday}_break_ends`}
+                        name={`day_${row.weekday}_closes`}
                         type="time"
-                        value={row.has_break ? row.break_ends : ""}
-                        onChange={(e) => update(row.weekday, { break_ends: e.target.value })}
-                        disabled={!row.has_break}
+                        value={row.closes}
+                        onChange={(e) => update(row.weekday, { closes: e.target.value })}
+                        className="min-w-0"
                       />
                     </div>
                   </div>
-                </div>
+
+                  <div className="border-t border-dashed border-border pt-3">
+                    <label className="flex items-center justify-between gap-2 text-text-xs text-muted-foreground">
+                      <span>Tem pausa no expediente</span>
+                      <Switch
+                        checked={row.has_break}
+                        onCheckedChange={(v) => update(row.weekday, { has_break: !!v })}
+                      />
+                    </label>
+                    {row.has_break && (
+                      <div className="mt-3 grid grid-cols-2 gap-2">
+                        <div className="grid gap-1 min-w-0">
+                          <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                            Começa
+                          </span>
+                          <Input
+                            name={`day_${row.weekday}_break_starts`}
+                            type="time"
+                            value={row.break_starts}
+                            onChange={(e) => update(row.weekday, { break_starts: e.target.value })}
+                            className="min-w-0"
+                          />
+                        </div>
+                        <div className="grid gap-1 min-w-0">
+                          <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                            Termina
+                          </span>
+                          <Input
+                            name={`day_${row.weekday}_break_ends`}
+                            type="time"
+                            value={row.break_ends}
+                            onChange={(e) => update(row.weekday, { break_ends: e.target.value })}
+                            className="min-w-0"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </>
               )}
             </div>
           );
         })}
       </fieldset>
 
-      <div className="flex justify-end">
-        <Button type="submit" disabled={pending || disabled}>
+      <div className="sm:flex sm:justify-end">
+        <Button
+          type="submit"
+          disabled={pending || disabled}
+          className="w-full sm:w-auto"
+        >
           <FloppyDiskIcon size={28} weight="duotone" />
           {pending ? "Salvando..." : "Salvar horários"}
         </Button>
