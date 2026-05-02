@@ -345,9 +345,11 @@ export async function updateMemberPermissionsAction(
     capabilities = selected;
   }
 
+  const atendeClientes = formData.get("atende_clientes") === "on";
+
   const { error } = await supabase
     .from("barbershop_members")
-    .update({ role, capabilities })
+    .update({ role, capabilities, atende_clientes: atendeClientes })
     .eq("barbershop_id", shopId)
     .eq("user_id", barberId);
   if (error) return { error: error.message };

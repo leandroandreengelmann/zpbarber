@@ -98,7 +98,7 @@ export default async function BarberDetailPage({
   ] = await Promise.all([
     supabase
       .from("barbershop_members")
-      .select("role, is_active, is_commissioned, capabilities, user:profiles(id, full_name, phone, avatar_url)")
+      .select("role, is_active, is_commissioned, atende_clientes, capabilities, user:profiles(id, full_name, phone, avatar_url)")
       .eq("barbershop_id", shopId)
       .eq("user_id", id)
       .maybeSingle(),
@@ -493,6 +493,7 @@ export default async function BarberDetailPage({
                     initialCapabilities={
                       (member.capabilities as Capability[] | null) ?? null
                     }
+                    initialAtende={member.atende_clientes ?? false}
                     selfBlocked={user.id === id}
                   />
                 )}

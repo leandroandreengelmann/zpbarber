@@ -80,7 +80,7 @@ export default async function AvaliacoesPage({
     .from("barbershop_members")
     .select("user_id, profiles(full_name)")
     .eq("barbershop_id", shopId)
-    .eq("role", "barbeiro")
+    .eq("atende_clientes", true)
     .eq("is_active", true);
   const barbers = (barberRows ?? [])
     .map((r) => ({

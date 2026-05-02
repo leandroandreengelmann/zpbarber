@@ -470,6 +470,7 @@ export type Database = {
       }
       barbershop_members: {
         Row: {
+          atende_clientes: boolean
           barbershop_id: string
           capabilities: string[] | null
           created_at: string
@@ -479,6 +480,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          atende_clientes?: boolean
           barbershop_id: string
           capabilities?: string[] | null
           created_at?: string
@@ -488,6 +490,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          atende_clientes?: boolean
           barbershop_id?: string
           capabilities?: string[] | null
           created_at?: string

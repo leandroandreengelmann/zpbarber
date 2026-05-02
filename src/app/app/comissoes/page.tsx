@@ -34,7 +34,7 @@ export default async function ComissoesListPage({
     .eq("barbershop_id", shopId)
     .eq("is_active", true)
     .eq("is_commissioned", true)
-    .in("role", ["barbeiro", "gestor"]);
+    .eq("atende_clientes", true);
 
   const barbers = (members ?? [])
     .map((m) => m.user)

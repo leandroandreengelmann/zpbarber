@@ -135,7 +135,7 @@ export async function signupBarbershopAction(
     return { error: shopErr?.message ?? "Falha ao criar barbearia." };
   }
 
-  // 5. associa user como gestor
+  // 5. associa user como gestor (e ja atende clientes — fundador costuma ser barbeiro também)
   const { error: memberErr } = await admin
     .from("barbershop_members")
     .insert({
@@ -143,6 +143,7 @@ export async function signupBarbershopAction(
       user_id: userId,
       role: "gestor",
       is_active: true,
+      atende_clientes: true,
     });
   if (memberErr) {
     // rollback total

@@ -175,7 +175,7 @@ export default async function AppDashboardPage() {
         .select("user:profiles(id, full_name)")
         .eq("barbershop_id", shop.id)
         .eq("is_active", true)
-        .in("role", ["barbeiro", "gestor"]),
+        .eq("atende_clientes", true),
     ]);
     const names = new Map<string, string>();
     for (const m of members ?? []) {

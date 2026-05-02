@@ -127,7 +127,7 @@ export default async function AgendaPage({
       .select("role, is_active, user:profiles(id, full_name)")
       .eq("barbershop_id", shopId)
       .eq("is_active", true)
-      .in("role", ["barbeiro", "gestor"]),
+      .eq("atende_clientes", true),
     supabase
       .from("barber_services")
       .select("barber_id, service_id, price_cents, duration_minutes")

@@ -55,7 +55,7 @@ export default async function TeamPage() {
   const supabase = await createClient();
   const { data: members } = await supabase
     .from("barbershop_members")
-    .select("role, is_active, created_at, user:profiles(id, full_name)")
+    .select("role, is_active, atende_clientes, created_at, user:profiles(id, full_name)")
     .eq("barbershop_id", shopId)
     .order("created_at");
 
@@ -126,10 +126,10 @@ export default async function TeamPage() {
                         </span>
                       </div>
                     </div>
-                    {((m.user?.id && m.role === "barbeiro") ||
+                    {((m.user?.id && m.atende_clientes) ||
                       (isManager && m.user?.id)) && (
                       <div className="mt-3 grid grid-cols-2 gap-2 border-t border-[var(--color-border-secondary)] pt-3">
-                        {m.user?.id && m.role === "barbeiro" && (
+                        {m.user?.id && m.atende_clientes && (
                           <Link
                             href={`/app/barbeiros/${m.user.id}`}
                             className={buttonVariants({
@@ -205,7 +205,7 @@ export default async function TeamPage() {
                     </TableCell>
                     <TableCell className="px-4 py-4 pr-6 text-right">
                       <div className="flex items-center justify-end gap-2">
-                        {m.user?.id && m.role === "barbeiro" && (
+                        {m.user?.id && m.atende_clientes && (
                           <Link
                             href={`/app/barbeiros/${m.user.id}`}
                             className={buttonVariants({ variant: "outline", size: "sm" })}

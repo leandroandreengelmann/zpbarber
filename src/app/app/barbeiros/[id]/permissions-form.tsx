@@ -34,17 +34,20 @@ export function PermissionsForm({
   action,
   initialRole,
   initialCapabilities,
+  initialAtende = false,
   disabled = false,
   selfBlocked = false,
 }: {
   action: (prev: State, fd: FormData) => Promise<State>;
   initialRole: AssignableRole;
   initialCapabilities: Capability[] | null;
+  initialAtende?: boolean;
   disabled?: boolean;
   selfBlocked?: boolean;
 }) {
   const [state, formAction, pending] = useActionState<State, FormData>(action, {});
   const [role, setRole] = useState<AssignableRole>(initialRole);
+  const [atende, setAtende] = useState<boolean>(initialAtende);
   const [mode, setMode] = useState<"preset" | "custom">(
     initialCapabilities === null ? "preset" : "custom"
   );
@@ -110,6 +113,23 @@ export function PermissionsForm({
             Define o conjunto padrão de permissões.
           </p>
         </div>
+
+        <label className="flex items-start justify-between gap-3 rounded-xl border border-[var(--color-border-secondary)] bg-[var(--color-bg-primary)] px-4 py-3.5">
+          <div className="grid gap-0.5">
+            <span className="text-text-sm font-semibold text-[var(--color-text-primary)]">
+              Atende clientes
+            </span>
+            <span className="text-text-sm text-[var(--color-text-tertiary)]">
+              Quando ligado, essa pessoa aparece como barbeiro na agenda e nos
+              agendamentos online — independente da função.
+            </span>
+          </div>
+          <Switch
+            checked={atende}
+            onCheckedChange={(v) => setAtende(v)}
+          />
+        </label>
+        <input type="hidden" name="atende_clientes" value={atende ? "on" : ""} />
 
         <label className="flex items-start justify-between gap-3 rounded-xl border border-[var(--color-border-secondary)] bg-[var(--color-bg-primary)] px-4 py-3.5">
           <div className="flex items-start gap-3">
