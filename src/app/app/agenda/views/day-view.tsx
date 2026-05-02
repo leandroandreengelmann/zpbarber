@@ -78,7 +78,7 @@ const STATUS_OPACITY: Record<AppointmentStatus, string> = {
 const PX_PER_MINUTE = 1.2;
 const HOUR_BASE_HEIGHT = 60 * PX_PER_MINUTE;
 const STACKED_CHIP_HEIGHT = 36;
-const STACKED_CHIP_GAP = 3;
+const STACKED_CHIP_GAP = 6;
 const HOUR_PAD_Y = 3;
 
 function buildHours() {
@@ -215,8 +215,8 @@ export function DayView({
                         key={a.id}
                         className="absolute"
                         style={{
-                          top,
-                          height: STACKED_CHIP_HEIGHT,
+                          top: top + 3,
+                          height: STACKED_CHIP_HEIGHT - 6,
                           left: `calc(${leftPct}% + 8px)`,
                           width: `calc(${widthPct}% - ${bucket.totalLanes > 1 ? 4 : 16}px)`,
                         }}
@@ -271,8 +271,8 @@ export function DayView({
                         key={a.id}
                         className="absolute"
                         style={{
-                          top,
-                          height: STACKED_CHIP_HEIGHT,
+                          top: top + 3,
+                          height: STACKED_CHIP_HEIGHT - 6,
                           left: 8,
                           right: 8,
                         }}
