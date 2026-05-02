@@ -5,13 +5,14 @@ import { createClient } from "@/lib/supabase/server";
 import { requireBarbershop } from "@/lib/auth/guards";
 import { newStaffSchema } from "@/lib/zod/team";
 import { logAudit } from "@/lib/audit/log";
+import { can } from "@/lib/auth/capabilities";
 
 type State = { error?: string; ok?: boolean };
 
 async function ensureManager() {
   const { membership } = await requireBarbershop();
-  if (membership.role !== "gestor") {
-    return { error: "apenas gestores podem alterar equipe" } as const;
+  if (!can(membership, "equipe.gerenciar")) {
+    return { error: "Sem permissão para alterar equipe." } as const;
   }
   return { shopId: membership.barbershop!.id } as const;
 }

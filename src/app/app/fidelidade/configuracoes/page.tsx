@@ -1,11 +1,12 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireBarbershop } from "@/lib/auth/guards";
+import { can } from "@/lib/auth/capabilities";
 import { LoyaltySettingsForm } from "./_components/settings-form";
 
 export default async function FidelidadeConfiguracoesPage() {
   const { membership } = await requireBarbershop();
-  if (membership.role !== "gestor") redirect("/app/fidelidade");
+  if (!can(membership, "fidelidade.gerenciar")) redirect("/app/fidelidade");
   const shopId = membership.barbershop!.id;
   const supabase = await createClient();
 

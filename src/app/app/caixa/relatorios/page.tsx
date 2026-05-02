@@ -9,6 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 import { requireBarbershop } from "@/lib/auth/guards";
+import { can } from "@/lib/auth/capabilities";
 import { formatDateTimeBR, formatMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -101,7 +102,7 @@ export default async function RelatoriosCaixaPage({
 }) {
   const { membership } = await requireBarbershop();
   const role = membership.role;
-  if (role === "barbeiro") {
+  if (!can(membership, "caixa.ver")) {
     return (
       <div className="mx-auto w-full max-w-3xl">
         <Card>

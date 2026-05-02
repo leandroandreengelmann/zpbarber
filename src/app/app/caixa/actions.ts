@@ -12,6 +12,7 @@ import { enqueueWhatsappMessage } from "@/lib/whatsapp/enqueue";
 import { logAudit } from "@/lib/audit/log";
 import { getAppBaseUrl } from "@/lib/platform-settings";
 import { isSessionExpired } from "@/lib/caixa/cutoff";
+import { can } from "@/lib/auth/capabilities";
 
 type State = { error?: string; ok?: boolean; saleId?: string };
 
@@ -60,12 +61,17 @@ type CloseState = State & { summary?: ClosingSummary };
 
 async function ctx() {
   const { user, membership } = await requireBarbershop();
-  return { userId: user.id, shopId: membership.barbershop!.id, role: membership.role };
+  return {
+    userId: user.id,
+    shopId: membership.barbershop!.id,
+    role: membership.role,
+    capabilities: membership.capabilities ?? null,
+  };
 }
 
 export async function openCashSessionAction(_prev: State, fd: FormData): Promise<State> {
   const c = await ctx();
-  if (c.role === "barbeiro") return { error: "Apenas gestor/recepcionista pode abrir caixa." };
+  if (!can(c, "caixa.abrir")) return { error: "Você não tem permissão para abrir o caixa." };
   const parsed = openSessionSchema.safeParse({
     opening_amount_cents: fd.get("opening_amount_cents") ?? 0,
   });
@@ -108,7 +114,7 @@ export async function closeCashSessionAction(
   fd: FormData
 ): Promise<CloseState> {
   const c = await ctx();
-  if (c.role === "barbeiro") return { error: "Apenas gestor/recepcionista pode fechar caixa." };
+  if (!can(c, "caixa.abrir")) return { error: "Você não tem permissão para fechar o caixa." };
   const parsed = closeSessionSchema.safeParse({
     session_id: fd.get("session_id") ?? "",
     closing_amount_cents: fd.get("closing_amount_cents") ?? 0,
@@ -513,7 +519,7 @@ async function dispatchPostServiceMessage(p: {
 
 export async function cancelSaleAction(saleId: string) {
   const c = await ctx();
-  if (c.role !== "gestor") throw new Error("Apenas gestor pode cancelar venda.");
+  if (!can(c, "caixa.cancelar_venda")) throw new Error("Você não tem permissão para cancelar venda.");
   const supabase = await createClient();
   const { error } = await supabase
     .from("sales")

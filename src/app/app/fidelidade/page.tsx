@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 import { requireBarbershop } from "@/lib/auth/guards";
+import { can } from "@/lib/auth/capabilities";
 import { formatDateBR } from "@/lib/format";
 import { MaintenanceButtons } from "./_components/maintenance-buttons";
 
@@ -11,7 +12,7 @@ type ClientBalance = { client_id: string; name: string; phone: string | null; ba
 
 export default async function FidelidadePage() {
   const { membership } = await requireBarbershop();
-  const isGestor = membership.role === "gestor";
+  const isGestor = can(membership, "fidelidade.gerenciar");
   const shopId = membership.barbershop!.id;
   const supabase = await createClient();
 

@@ -24,6 +24,7 @@ import {
   type WhatsappConnectionStatus,
 } from "@/lib/zod/whatsapp";
 import { logAudit } from "@/lib/audit/log";
+import { can } from "@/lib/auth/capabilities";
 
 type State = { error?: string; ok?: boolean; qr?: string };
 
@@ -34,6 +35,7 @@ async function ctx() {
     shopId: membership.barbershop!.id,
     shopSlug: membership.barbershop!.slug ?? null,
     role: membership.role,
+    capabilities: membership.capabilities ?? null,
   };
 }
 
@@ -72,8 +74,8 @@ export async function connectInstanceAction(
   _fd: FormData
 ): Promise<State> {
   const c = await ctx();
-  if (c.role !== "gestor")
-    return { error: "Apenas gestor pode conectar o WhatsApp." };
+  if (!can(c, "whatsapp.gerenciar"))
+    return { error: "Sem permissão para conectar o WhatsApp." };
   if (!isEvolutionConfigured())
     return {
       error:
@@ -214,8 +216,8 @@ export async function disconnectInstanceAction(
   _fd: FormData
 ): Promise<State> {
   const c = await ctx();
-  if (c.role !== "gestor")
-    return { error: "Apenas gestor pode desconectar." };
+  if (!can(c, "whatsapp.gerenciar"))
+    return { error: "Sem permissão para desconectar." };
   const supabase = await createClient();
   const { data: s } = await supabase
     .from("whatsapp_settings")
@@ -252,7 +254,7 @@ export async function deleteInstanceAction(
   _fd: FormData
 ): Promise<State> {
   const c = await ctx();
-  if (c.role !== "gestor") return { error: "Apenas gestor." };
+  if (!can(c, "whatsapp.gerenciar")) return { error: "Sem permissão." };
   const supabase = await createClient();
   const { data: s } = await supabase
     .from("whatsapp_settings")
@@ -287,7 +289,7 @@ export async function saveSettingsAction(
   fd: FormData
 ): Promise<State> {
   const c = await ctx();
-  if (c.role !== "gestor") return { error: "Apenas gestor." };
+  if (!can(c, "whatsapp.gerenciar")) return { error: "Sem permissão." };
 
   const parsed = whatsappSettingsSchema.safeParse({
     trigger_confirmation: fd.get("trigger_confirmation") === "on",
@@ -332,7 +334,7 @@ export async function upsertTemplateAction(
   fd: FormData
 ): Promise<State> {
   const c = await ctx();
-  if (c.role !== "gestor") return { error: "Apenas gestor." };
+  if (!can(c, "whatsapp.gerenciar")) return { error: "Sem permissão." };
 
   const parsed = whatsappTemplateSchema.safeParse({
     id: fd.get("id") || undefined,
@@ -388,7 +390,7 @@ export async function deleteTemplateAction(
   fd: FormData
 ): Promise<State> {
   const c = await ctx();
-  if (c.role !== "gestor") return { error: "Apenas gestor." };
+  if (!can(c, "whatsapp.gerenciar")) return { error: "Sem permissão." };
   const parsed = whatsappTemplateDeleteSchema.safeParse({ id: fd.get("id") });
   if (!parsed.success) return { error: "id inválido" };
   const supabase = await createClient();

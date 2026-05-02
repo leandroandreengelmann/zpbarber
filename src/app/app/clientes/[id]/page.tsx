@@ -36,6 +36,7 @@ import {
 } from "@/components/ui/tabs";
 import { createClient } from "@/lib/supabase/server";
 import { requireBarbershop } from "@/lib/auth/guards";
+import { can } from "@/lib/auth/capabilities";
 import { formatDateBR, formatDateTimeBR, formatMoney } from "@/lib/format";
 import { updateClientAction } from "../actions";
 import { ClientForm } from "../client-form";
@@ -71,7 +72,7 @@ export default async function ClienteDetailPage({
   const { id } = await params;
   const { membership } = await requireBarbershop();
   const shopId = membership.barbershop!.id;
-  const isGestor = membership.role === "gestor";
+  const isGestor = can(membership, "clientes.gerenciar");
 
   const supabase = await createClient();
   const nowIso = new Date().toISOString();

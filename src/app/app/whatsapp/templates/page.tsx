@@ -1,12 +1,13 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireBarbershop } from "@/lib/auth/guards";
+import { can } from "@/lib/auth/capabilities";
 import { TemplatesList } from "../_components/templates-list";
 import type { WhatsappTrigger } from "@/lib/zod/whatsapp";
 
 export default async function WhatsappTemplatesPage() {
   const { membership } = await requireBarbershop();
-  if (membership.role !== "gestor") redirect("/app/whatsapp");
+  if (!can(membership, "whatsapp.gerenciar")) redirect("/app/whatsapp");
   const shopId = membership.barbershop!.id;
   const supabase = await createClient();
 

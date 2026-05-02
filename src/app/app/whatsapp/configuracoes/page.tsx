@@ -2,12 +2,13 @@ import { redirect } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/server";
 import { requireBarbershop } from "@/lib/auth/guards";
+import { can } from "@/lib/auth/capabilities";
 import { ConnectCard } from "../_components/connect-card";
 import { SettingsForm } from "../_components/settings-form";
 
 export default async function WhatsappConfiguracoesPage() {
   const { membership } = await requireBarbershop();
-  if (membership.role !== "gestor") redirect("/app/whatsapp");
+  if (!can(membership, "whatsapp.gerenciar")) redirect("/app/whatsapp");
   const shopId = membership.barbershop!.id;
   const supabase = await createClient();
 

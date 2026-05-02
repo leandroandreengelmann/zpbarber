@@ -11,23 +11,24 @@ import {
   barberWorkingDaySchema,
 } from "@/lib/zod/barber-capabilities";
 import { profileSchema } from "@/lib/zod/team";
+import { can, CAPABILITIES, type Capability } from "@/lib/auth/capabilities";
 
 type State = { error?: string; ok?: boolean };
 
 async function ensureCanEdit(barberId: string) {
   const { user, membership } = await requireBarbershop();
-  const isManager = membership.role === "gestor";
+  const isManager = can(membership, "equipe.gerenciar");
   const isSelf = user.id === barberId;
   if (!isManager && !isSelf) {
-    return { error: "sem permissão para editar este barbeiro" } as const;
+    return { error: "Sem permissão para editar este barbeiro." } as const;
   }
   return { shopId: membership.barbershop!.id } as const;
 }
 
 async function ensureManager(barberId: string) {
   const { membership } = await requireBarbershop();
-  if (membership.role !== "gestor") {
-    return { error: "apenas gestores podem alterar" } as const;
+  if (!can(membership, "equipe.gerenciar")) {
+    return { error: "Sem permissão para alterar." } as const;
   }
   return { shopId: membership.barbershop!.id, barberId } as const;
 }
@@ -295,6 +296,64 @@ export async function saveBarberProductsAction(
   }
 
   revalidatePath(`/app/barbeiros/${barberId}`);
+  return { ok: true };
+}
+
+const ASSIGNABLE_ROLES = ["gestor", "recepcionista", "barbeiro"] as const;
+type AssignableRole = (typeof ASSIGNABLE_ROLES)[number];
+
+export async function updateMemberPermissionsAction(
+  barberId: string,
+  _prev: State,
+  formData: FormData
+): Promise<State> {
+  const { user, membership } = await requireBarbershop();
+  if (!can(membership, "equipe.gerenciar")) {
+    return { error: "Sem permissão para alterar." };
+  }
+  if (user.id === barberId) {
+    return { error: "Você não pode alterar suas próprias permissões." };
+  }
+
+  const shopId = membership.barbershop!.id;
+  const supabase = await createClient();
+
+  const { data: target } = await supabase
+    .from("barbershop_members")
+    .select("role")
+    .eq("barbershop_id", shopId)
+    .eq("user_id", barberId)
+    .maybeSingle();
+  if (!target) return { error: "Membro não encontrado." };
+  if (target.role === "super_admin") {
+    return { error: "Super admin não pode ser alterado." };
+  }
+
+  const roleRaw = String(formData.get("role") ?? "");
+  if (!(ASSIGNABLE_ROLES as readonly string[]).includes(roleRaw)) {
+    return { error: "Função inválida." };
+  }
+  const role = roleRaw as AssignableRole;
+
+  const mode = String(formData.get("mode") ?? "preset");
+  let capabilities: Capability[] | null = null;
+  if (mode === "custom") {
+    const selected: Capability[] = [];
+    for (const cap of CAPABILITIES) {
+      if (formData.get(`cap:${cap}`) === "on") selected.push(cap);
+    }
+    capabilities = selected;
+  }
+
+  const { error } = await supabase
+    .from("barbershop_members")
+    .update({ role, capabilities })
+    .eq("barbershop_id", shopId)
+    .eq("user_id", barberId);
+  if (error) return { error: error.message };
+
+  revalidatePath(`/app/barbeiros/${barberId}`);
+  revalidatePath("/app/barbeiros");
   return { ok: true };
 }
 

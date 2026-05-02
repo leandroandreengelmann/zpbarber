@@ -6,6 +6,7 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { requireBarbershop } from "@/lib/auth/guards";
+import { can } from "@/lib/auth/capabilities";
 import { ProductForm } from "../product-form";
 import { updateProductAction } from "../actions";
 import {
@@ -24,7 +25,7 @@ export default async function EditProductPage({
 }) {
   const { id } = await params;
   const { membership } = await requireBarbershop();
-  if (membership.role !== "gestor") redirect("/app/produtos");
+  if (!can(membership, "produtos.gerenciar")) redirect("/app/produtos");
 
   const supabase = await createClient();
   const { data: prod } = await supabase

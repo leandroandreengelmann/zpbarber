@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useMemo, useState } from "react";
-import { FloppyDiskIcon, ScissorsIcon } from "@phosphor-icons/react";
+import { CaretDownIcon, FloppyDiskIcon, ScissorsIcon } from "@phosphor-icons/react";
 import { notify } from "@/components/ui/toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,6 +29,7 @@ export type BarberOverride = {
 type RowState = {
   service_id: string;
   enabled: boolean;
+  expanded: boolean;
   price: string;
   duration: string;
   commission: string;
@@ -42,8 +43,10 @@ function centsToInput(cents: number | null) {
 function inputToCents(input: string) {
   const trimmed = input.trim();
   if (!trimmed) return null;
-  const digits = trimmed.replace(/\D/g, "");
-  return digits ? Number.parseInt(digits, 10) : null;
+  const normalized = trimmed.replace(/\s/g, "").replace(",", ".");
+  const value = Number.parseFloat(normalized);
+  if (!Number.isFinite(value) || value < 0) return null;
+  return Math.round(value * 100);
 }
 
 export function BarberServicesForm({
@@ -70,6 +73,7 @@ export function BarberServicesForm({
       return {
         service_id: s.id,
         enabled: o?.is_active ?? false,
+        expanded: false,
         price: centsToInput(o?.price_cents ?? null),
         duration: o?.duration_minutes != null ? String(o.duration_minutes) : "",
         commission:
@@ -81,7 +85,10 @@ export function BarberServicesForm({
   );
 
   useEffect(() => {
-    if (state.ok) notify.success("Serviços salvos", { description: "As alterações foram aplicadas." });
+    if (state.ok) {
+      notify.success("Serviços salvos", { description: "As alterações foram aplicadas." });
+      setRows((prev) => prev.map((r) => ({ ...r, expanded: false })));
+    }
     if (state.error) notify.error("Não foi possível salvar", { description: state.error });
   }, [state]);
 
@@ -133,7 +140,9 @@ export function BarberServicesForm({
                 <label className="flex flex-1 items-center gap-3">
                   <Switch
                     checked={row.enabled}
-                    onCheckedChange={(v) => update(idx, { enabled: !!v })}
+                    onCheckedChange={(v) =>
+                      update(idx, { enabled: !!v, expanded: !!v ? row.expanded : false })
+                    }
                   />
                   <div className="grid min-w-0 flex-1">
                     <span className="text-text-sm font-semibold text-[var(--color-text-primary)] break-words">
@@ -145,9 +154,24 @@ export function BarberServicesForm({
                     </span>
                   </div>
                 </label>
+                {row.enabled && (
+                  <button
+                    type="button"
+                    onClick={() => update(idx, { expanded: !row.expanded })}
+                    className="inline-flex h-9 shrink-0 items-center gap-1 rounded-md border border-[var(--color-border-secondary)] bg-[var(--color-bg-primary)] px-2.5 text-text-xs font-medium text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)]"
+                    aria-expanded={row.expanded}
+                  >
+                    {row.expanded ? "Fechar" : "Personalizar"}
+                    <CaretDownIcon
+                      size={14}
+                      weight="bold"
+                      className={row.expanded ? "rotate-180 transition-transform" : "transition-transform"}
+                    />
+                  </button>
+                )}
               </div>
 
-              {row.enabled && (
+              {row.enabled && row.expanded && (
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                   <div className="grid gap-1">
                     <span className="text-text-xs uppercase tracking-wide text-[var(--color-text-tertiary)]">

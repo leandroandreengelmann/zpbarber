@@ -4,10 +4,11 @@ import {
   UserSwitchIcon,
 } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/server";
 import { requireBarbershop } from "@/lib/auth/guards";
+import { can } from "@/lib/auth/capabilities";
+import { Forbidden } from "@/app/app/_components/forbidden";
 import { formatDateBR, formatMoney } from "@/lib/format";
 import { resolvePeriod } from "./_lib/period";
 import { PeriodFilter } from "./_components/period-filter";
@@ -20,7 +21,7 @@ export default async function ComissoesListPage({
   searchParams: SearchParams;
 }) {
   const { membership } = await requireBarbershop();
-  if (membership.role !== "gestor") redirect("/app");
+  if (!can(membership, "comissoes.ver")) return <Forbidden title="Comissões" />;
 
   const sp = await searchParams;
   const period = resolvePeriod(sp);

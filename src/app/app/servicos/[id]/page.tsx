@@ -6,6 +6,7 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { requireBarbershop } from "@/lib/auth/guards";
+import { can } from "@/lib/auth/capabilities";
 import { ServiceForm } from "../service-form";
 import { updateServiceAction } from "../actions";
 import {
@@ -24,7 +25,7 @@ export default async function EditServicePage({
 }) {
   const { id } = await params;
   const { membership } = await requireBarbershop();
-  if (membership.role !== "gestor") redirect("/app/servicos");
+  if (!can(membership, "servicos.gerenciar")) redirect("/app/servicos");
 
   const supabase = await createClient();
   const { data: svc } = await supabase

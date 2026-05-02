@@ -9,12 +9,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { requireBarbershop } from "@/lib/auth/guards";
+import { can } from "@/lib/auth/capabilities";
 import { ServiceForm } from "../service-form";
 import { createServiceAction } from "../actions";
 
 export default async function NewServicePage() {
   const { membership } = await requireBarbershop();
-  if (membership.role !== "gestor") redirect("/app/servicos");
+  if (!can(membership, "servicos.gerenciar")) redirect("/app/servicos");
 
   return (
     <div className="mx-auto grid w-full max-w-2xl gap-6">

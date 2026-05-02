@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 import { requireBarbershop } from "@/lib/auth/guards";
+import { can } from "@/lib/auth/capabilities";
 import { buildClosingSummary } from "../../actions";
 import { ClosingReportView } from "../_components/closing-report-view";
 
@@ -14,7 +15,7 @@ export default async function CaixaReportDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { membership } = await requireBarbershop();
-  if (membership.role === "barbeiro") {
+  if (!can(membership, "caixa.ver")) {
     return (
       <div className="mx-auto w-full max-w-3xl">
         <Card>

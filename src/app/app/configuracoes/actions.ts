@@ -7,6 +7,7 @@ import {
   businessHoursSchema,
   shopSettingsSchema,
 } from "@/lib/zod/settings";
+import { can } from "@/lib/auth/capabilities";
 
 type State = { error?: string; ok?: boolean };
 
@@ -15,8 +16,8 @@ export async function updateShopSettingsAction(
   formData: FormData
 ): Promise<State> {
   const { membership } = await requireBarbershop();
-  if (membership.role !== "gestor") {
-    return { error: "apenas gestores podem alterar" };
+  if (!can(membership, "configuracoes.gerenciar")) {
+    return { error: "Sem permissão para alterar configurações." };
   }
   const shopId = membership.barbershop!.id;
 
@@ -84,8 +85,8 @@ export async function updateShopSettingsAction(
 
 export async function togglePublicBookingAction(formData: FormData): Promise<State> {
   const { membership } = await requireBarbershop();
-  if (membership.role !== "gestor") {
-    return { error: "apenas gestores podem alterar" };
+  if (!can(membership, "configuracoes.gerenciar")) {
+    return { error: "Sem permissão para alterar configurações." };
   }
   const shopId = membership.barbershop!.id;
   const enabled = formData.get("enabled") === "true";
@@ -105,8 +106,8 @@ export async function updateBusinessHoursAction(
   formData: FormData
 ): Promise<State> {
   const { membership } = await requireBarbershop();
-  if (membership.role !== "gestor") {
-    return { error: "apenas gestores podem alterar" };
+  if (!can(membership, "configuracoes.gerenciar")) {
+    return { error: "Sem permissão para alterar configurações." };
   }
   const shopId = membership.barbershop!.id;
   const supabase = await createClient();

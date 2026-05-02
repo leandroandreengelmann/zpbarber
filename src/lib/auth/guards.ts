@@ -52,6 +52,7 @@ export async function requireBarbershop() {
       membership: {
         role: "gestor" as const,
         is_active: true,
+        capabilities: null,
         barbershop: shop,
       },
     };

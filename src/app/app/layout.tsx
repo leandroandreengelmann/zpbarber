@@ -9,8 +9,9 @@ import { getCurrentMemberships } from "@/lib/auth/current-user";
 import { getBarbershopBillingState } from "@/lib/billing/access";
 import type { NavItem, NavSection } from "@/components/shell/sidebar-nav";
 import { ImpersonationBanner } from "./_components/impersonation-banner";
+import { can, type Capability } from "@/lib/auth/capabilities";
 
-type RoleNavItem = NavItem & { gestorOnly?: boolean };
+type RoleNavItem = NavItem & { capability?: Capability };
 type RoleNavSection = { title?: string; items: RoleNavItem[] };
 
 const SECTIONS: RoleNavSection[] = [
@@ -20,17 +21,18 @@ const SECTIONS: RoleNavSection[] = [
   {
     title: "Operação",
     items: [
-      { href: "/app/agenda", label: "Agenda", icon: "calendar" },
+      { href: "/app/agenda", label: "Agenda", icon: "calendar", capability: "agenda.ver" },
       {
         href: "/app/caixa",
         label: "Caixa",
         icon: "cashRegister",
+        capability: "caixa.ver",
         children: [
           { href: "/app/caixa", label: "Caixa atual", exact: true },
           { href: "/app/caixa/relatorios", label: "Relatório de caixas" },
         ],
       },
-      { href: "/app/clientes", label: "Clientes", icon: "usersThree" },
+      { href: "/app/clientes", label: "Clientes", icon: "usersThree", capability: "clientes.ver" },
     ],
   },
   {
@@ -45,17 +47,17 @@ const SECTIONS: RoleNavSection[] = [
     title: "Crescimento",
     items: [
       { href: "/app/fidelidade", label: "Fidelidade", icon: "gift" },
-      { href: "/app/whatsapp", label: "WhatsApp", icon: "whatsapp" },
-      { href: "/app/avaliacoes", label: "Avaliações", icon: "star" },
+      { href: "/app/whatsapp", label: "WhatsApp", icon: "whatsapp", capability: "whatsapp.gerenciar" },
+      { href: "/app/avaliacoes", label: "Avaliações", icon: "star", capability: "avaliacoes.gerenciar" },
     ],
   },
   {
     title: "Gestão",
     items: [
-      { href: "/app/financeiro", label: "Financeiro", icon: "currencyDollar" },
-      { href: "/app/comissoes", label: "Comissões", icon: "chartBar", gestorOnly: true },
-      { href: "/app/logs", label: "Logs", icon: "shieldCheck", gestorOnly: true },
-      { href: "/app/configuracoes", label: "Configurações", icon: "gear" },
+      { href: "/app/financeiro", label: "Financeiro", icon: "currencyDollar", capability: "financeiro.ver" },
+      { href: "/app/comissoes", label: "Comissões", icon: "chartBar", capability: "comissoes.ver" },
+      { href: "/app/logs", label: "Logs", icon: "shieldCheck", capability: "configuracoes.gerenciar" },
+      { href: "/app/configuracoes", label: "Configurações", icon: "gear", capability: "configuracoes.gerenciar" },
     ],
   },
 ];
@@ -75,7 +77,7 @@ function daysBetween(iso: string): number {
 export default async function AppLayout({ children }: { children: ReactNode }) {
   const { user, membership } = await requireBarbershop();
   const shop = membership.barbershop!;
-  const isGestor = membership.role === "gestor";
+  const isGestor = can(membership, "configuracoes.gerenciar");
 
   const memberships = await getCurrentMemberships();
   const isImpersonating =
@@ -96,7 +98,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
   const sections: NavSection[] = SECTIONS.map((s) => ({
     title: s.title,
     items: s.items
-      .filter((it) => isGestor || !it.gestorOnly)
+      .filter((it) => !it.capability || can(membership, it.capability))
       .map(
         (it): NavItem => ({
           href: it.href,

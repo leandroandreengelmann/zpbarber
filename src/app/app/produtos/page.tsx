@@ -19,10 +19,11 @@ import {
 } from "@/components/ui/table";
 import { formatMoney } from "@/lib/format";
 import { requireBarbershop } from "@/lib/auth/guards";
+import { can } from "@/lib/auth/capabilities";
 
 export default async function ProductsPage() {
   const { membership } = await requireBarbershop();
-  const isManager = membership.role === "gestor";
+  const isManager = can(membership, "produtos.gerenciar");
   const supabase = await createClient();
   const { data } = await supabase
     .from("products")

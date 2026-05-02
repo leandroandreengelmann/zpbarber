@@ -5,7 +5,8 @@ import {
   PackageIcon,
 } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
+import { Forbidden } from "@/app/app/_components/forbidden";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
@@ -18,6 +19,7 @@ import {
 } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/server";
 import { requireBarbershop } from "@/lib/auth/guards";
+import { can } from "@/lib/auth/capabilities";
 import { formatDateBR, formatDateTimeBR, formatMoney } from "@/lib/format";
 import { resolvePeriod } from "../_lib/period";
 import { PeriodFilter } from "../_components/period-filter";
@@ -42,7 +44,7 @@ export default async function ComissaoDetailPage({
 }) {
   const { id } = await params;
   const { membership } = await requireBarbershop();
-  if (membership.role !== "gestor") redirect("/app");
+  if (!can(membership, "comissoes.ver")) return <Forbidden title="Comissões" />;
 
   const sp = await searchParams;
   const period = resolvePeriod(sp);

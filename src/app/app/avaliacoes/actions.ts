@@ -9,13 +9,14 @@ import {
   reviewRespondSchema,
   reviewToggleHiddenSchema,
 } from "@/lib/zod/reviews";
+import { can } from "@/lib/auth/capabilities";
 
 type State = { error?: string; ok?: boolean };
 
 async function ensureGestor() {
   const { user, membership } = await requireBarbershop();
-  if (membership.role !== "gestor") {
-    throw new Error("apenas gestores");
+  if (!can(membership, "avaliacoes.gerenciar")) {
+    throw new Error("Sem permissão.");
   }
   return { userId: user.id, shopId: membership.barbershop!.id };
 }

@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { createClient } from "@/lib/supabase/server";
 import { requireBarbershop } from "@/lib/auth/guards";
+import { can } from "@/lib/auth/capabilities";
 import type { CategoryColor } from "@/lib/zod/financeiro";
 import { saveExpenseCategoryAction } from "../actions";
 import { CategoryForm } from "./_components/category-form";
@@ -19,7 +20,7 @@ import { CategoryCard, CategoryRow } from "./_components/category-row";
 
 export default async function CategoriasPage() {
   const { membership } = await requireBarbershop();
-  if (membership.role !== "gestor") redirect("/app/financeiro");
+  if (!can(membership, "financeiro.gerenciar")) redirect("/app/financeiro");
   const shopId = membership.barbershop!.id;
   const supabase = await createClient();
 

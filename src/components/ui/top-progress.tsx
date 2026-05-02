@@ -10,11 +10,14 @@ export function TopProgress() {
   const trickleRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const finishRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const safetyRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const start = () => {
     if (finishRef.current) {
       clearTimeout(finishRef.current);
       finishRef.current = null;
     }
+    if (safetyRef.current) clearTimeout(safetyRef.current);
     setProgress(15);
     if (trickleRef.current) clearInterval(trickleRef.current);
     trickleRef.current = setInterval(() => {
@@ -25,12 +28,17 @@ export function TopProgress() {
         return Math.min(p + inc, 90);
       });
     }, 200);
+    safetyRef.current = setTimeout(() => done(), 8000);
   };
 
   const done = () => {
     if (trickleRef.current) {
       clearInterval(trickleRef.current);
       trickleRef.current = null;
+    }
+    if (safetyRef.current) {
+      clearTimeout(safetyRef.current);
+      safetyRef.current = null;
     }
     setProgress(100);
     finishRef.current = setTimeout(() => setProgress(null), 280);
@@ -69,6 +77,8 @@ export function TopProgress() {
       const form = e.target as HTMLFormElement | null;
       if (!form) return;
       if (form.target === "_blank") return;
+      const action = form.getAttribute("action") ?? "";
+      if (action.startsWith("javascript:")) return;
       start();
     };
 
@@ -90,6 +100,7 @@ export function TopProgress() {
     return () => {
       if (trickleRef.current) clearInterval(trickleRef.current);
       if (finishRef.current) clearTimeout(finishRef.current);
+      if (safetyRef.current) clearTimeout(safetyRef.current);
     };
   }, []);
 

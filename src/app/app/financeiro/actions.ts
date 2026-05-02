@@ -20,6 +20,7 @@ import {
   receivableUpdateSchema,
 } from "@/lib/zod/financeiro";
 import { isSessionExpired } from "@/lib/caixa/cutoff";
+import { can } from "@/lib/auth/capabilities";
 
 type State = { error?: string; ok?: boolean };
 
@@ -29,6 +30,7 @@ async function ctx() {
     userId: user.id,
     shopId: membership.barbershop!.id,
     role: membership.role,
+    capabilities: membership.capabilities ?? null,
   };
 }
 
@@ -71,8 +73,8 @@ export async function saveExpenseCategoryAction(
   fd: FormData
 ): Promise<State> {
   const c = await ctx();
-  if (c.role !== "gestor")
-    return { error: "Apenas gestor pode gerenciar categorias." };
+  if (!can(c, "financeiro.gerenciar"))
+    return { error: "Sem permissão para gerenciar categorias." };
   const parsed = expenseCategorySchema.safeParse({
     id: fd.get("id") || undefined,
     name: fd.get("name") ?? "",
@@ -110,8 +112,8 @@ export async function deleteExpenseCategoryAction(
   fd: FormData
 ): Promise<State> {
   const c = await ctx();
-  if (c.role !== "gestor")
-    return { error: "Apenas gestor pode excluir categorias." };
+  if (!can(c, "financeiro.gerenciar"))
+    return { error: "Sem permissão para excluir categorias." };
   const parsed = deleteExpenseCategorySchema.safeParse({
     id: fd.get("id") ?? "",
   });
@@ -160,7 +162,7 @@ export async function createExpenseAction(
   fd: FormData
 ): Promise<State> {
   const c = await ctx();
-  if (c.role === "barbeiro")
+  if (!can(c, "financeiro.lancar"))
     return { error: "Sem permissão para criar despesa." };
   const parsed = expenseCreateSchema.safeParse({
     category_id: fd.get("category_id") ?? "",
@@ -222,7 +224,7 @@ export async function updateExpenseAction(
   fd: FormData
 ): Promise<State> {
   const c = await ctx();
-  if (c.role === "barbeiro")
+  if (!can(c, "financeiro.lancar"))
     return { error: "Sem permissão para editar despesa." };
   const parsed = expenseUpdateSchema.safeParse({
     id: fd.get("id") ?? "",
@@ -258,7 +260,7 @@ export async function payExpenseAction(
   fd: FormData
 ): Promise<State> {
   const c = await ctx();
-  if (c.role === "barbeiro")
+  if (!can(c, "financeiro.lancar"))
     return { error: "Sem permissão para pagar despesa." };
   const parsed = expensePaySchema.safeParse({
     id: fd.get("id") ?? "",
@@ -313,8 +315,8 @@ export async function unpayExpenseAction(
   fd: FormData
 ): Promise<State> {
   const c = await ctx();
-  if (c.role !== "gestor")
-    return { error: "Apenas gestor pode reverter pagamento." };
+  if (!can(c, "financeiro.gerenciar"))
+    return { error: "Sem permissão para reverter pagamento." };
   const parsed = expenseUnpaySchema.safeParse({ id: fd.get("id") ?? "" });
   if (!parsed.success) return { error: flatten(parsed.error.issues) };
   const supabase = await createClient();
@@ -343,8 +345,8 @@ export async function deleteExpenseAction(
   fd: FormData
 ): Promise<State> {
   const c = await ctx();
-  if (c.role !== "gestor")
-    return { error: "Apenas gestor pode excluir despesa." };
+  if (!can(c, "financeiro.gerenciar"))
+    return { error: "Sem permissão para excluir despesa." };
   const parsed = expenseDeleteSchema.safeParse({ id: fd.get("id") ?? "" });
   if (!parsed.success) return { error: flatten(parsed.error.issues) };
   const supabase = await createClient();
@@ -392,7 +394,7 @@ export async function createReceivableAction(
   fd: FormData
 ): Promise<State> {
   const c = await ctx();
-  if (c.role === "barbeiro")
+  if (!can(c, "financeiro.lancar"))
     return { error: "Sem permissão para criar recebível." };
   const parsed = receivableCreateSchema.safeParse({
     client_id: fd.get("client_id") ?? "",
@@ -455,7 +457,7 @@ export async function updateReceivableAction(
   fd: FormData
 ): Promise<State> {
   const c = await ctx();
-  if (c.role === "barbeiro")
+  if (!can(c, "financeiro.lancar"))
     return { error: "Sem permissão para editar recebível." };
   const parsed = receivableUpdateSchema.safeParse({
     id: fd.get("id") ?? "",
@@ -491,7 +493,7 @@ export async function receiveReceivableAction(
   fd: FormData
 ): Promise<State> {
   const c = await ctx();
-  if (c.role === "barbeiro")
+  if (!can(c, "financeiro.lancar"))
     return { error: "Sem permissão para receber." };
   const parsed = receivableReceiveSchema.safeParse({
     id: fd.get("id") ?? "",
@@ -546,8 +548,8 @@ export async function unreceiveReceivableAction(
   fd: FormData
 ): Promise<State> {
   const c = await ctx();
-  if (c.role !== "gestor")
-    return { error: "Apenas gestor pode reverter recebimento." };
+  if (!can(c, "financeiro.gerenciar"))
+    return { error: "Sem permissão para reverter recebimento." };
   const parsed = receivableUnreceiveSchema.safeParse({
     id: fd.get("id") ?? "",
   });
@@ -578,8 +580,8 @@ export async function deleteReceivableAction(
   fd: FormData
 ): Promise<State> {
   const c = await ctx();
-  if (c.role !== "gestor")
-    return { error: "Apenas gestor pode excluir recebível." };
+  if (!can(c, "financeiro.gerenciar"))
+    return { error: "Sem permissão para excluir recebível." };
   const parsed = receivableDeleteSchema.safeParse({ id: fd.get("id") ?? "" });
   if (!parsed.success) return { error: flatten(parsed.error.issues) };
   const supabase = await createClient();
@@ -604,7 +606,7 @@ export async function createCashMovementAction(
   fd: FormData
 ): Promise<State> {
   const c = await ctx();
-  if (c.role === "barbeiro")
+  if (!can(c, "financeiro.lancar"))
     return { error: "Sem permissão para movimentar caixa." };
   const parsed = cashMovementSchema.safeParse({
     type: fd.get("type") ?? "",
@@ -638,8 +640,8 @@ export async function deleteCashMovementAction(
   fd: FormData
 ): Promise<State> {
   const c = await ctx();
-  if (c.role !== "gestor")
-    return { error: "Apenas gestor pode excluir movimento." };
+  if (!can(c, "financeiro.gerenciar"))
+    return { error: "Sem permissão para excluir movimento." };
   const parsed = deleteCashMovementSchema.safeParse({
     id: fd.get("id") ?? "",
   });

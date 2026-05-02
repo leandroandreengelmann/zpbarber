@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/dialog";
 import { createClient } from "@/lib/supabase/server";
 import { requireBarbershop } from "@/lib/auth/guards";
+import { can } from "@/lib/auth/capabilities";
 import { formatMoney } from "@/lib/format";
 import {
   createAppointmentAction,
@@ -80,7 +81,7 @@ export default async function AgendaPage({
   const timezone = membership.barbershop!.timezone ?? "America/Sao_Paulo";
   const date = isISODate(sp.d) ? sp.d : todayLocalISO(timezone);
   const view: CalendarView = isView(sp.v) ? sp.v : "day";
-  const isBarberRole = membership.role === "barbeiro";
+  const isBarberRole = !can(membership, "agenda.gerenciar");
   const supabase = await createClient();
 
   const { startISO, endISO } =

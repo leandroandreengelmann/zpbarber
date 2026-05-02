@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
 import { requireBarbershop } from "@/lib/auth/guards";
+import { can } from "@/lib/auth/capabilities";
 import { createClient } from "@/lib/supabase/server";
 import {
   formatDateBR,
@@ -45,8 +46,8 @@ export default async function AppDashboardPage() {
   const { user, membership } = await requireBarbershop();
   const shop = membership.barbershop!;
   const timezone = shop.timezone ?? "America/Sao_Paulo";
-  const isBarber = membership.role === "barbeiro";
-  const isGestor = membership.role === "gestor";
+  const isBarber = !can(membership, "agenda.gerenciar");
+  const isGestor = can(membership, "relatorios.ver");
   const today = todayLocalISO(timezone);
   const { startISO, endISO } = dayBoundsUTC(today, timezone);
 

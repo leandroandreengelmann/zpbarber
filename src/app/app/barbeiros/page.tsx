@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/table";
 import { createClient } from "@/lib/supabase/server";
 import { requireBarbershop } from "@/lib/auth/guards";
+import { can } from "@/lib/auth/capabilities";
 import { formatDateBR } from "@/lib/format";
 import { createStaffAction, setMemberActiveAction } from "./actions";
 import { NewStaffForm } from "./new-staff-form";
@@ -49,7 +50,7 @@ function initials(name?: string | null) {
 
 export default async function TeamPage() {
   const { membership } = await requireBarbershop();
-  const isManager = membership.role === "gestor";
+  const isManager = can(membership, "equipe.gerenciar");
   const shopId = membership.barbershop!.id;
   const supabase = await createClient();
   const { data: members } = await supabase

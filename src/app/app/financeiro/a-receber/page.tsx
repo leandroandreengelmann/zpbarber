@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { createClient } from "@/lib/supabase/server";
 import { requireBarbershop } from "@/lib/auth/guards";
+import { can } from "@/lib/auth/capabilities";
 import { formatMoney } from "@/lib/format";
 import type { PaymentMethod } from "@/lib/zod/caixa";
 import { resolvePeriod, todayISO } from "../_lib/period";
@@ -40,7 +41,7 @@ export default async function AReceberPage({
   searchParams: SearchParams;
 }) {
   const { membership } = await requireBarbershop();
-  if (membership.role === "barbeiro") {
+  if (!can(membership, "financeiro.ver")) {
     return (
       <p className="text-text-md text-[var(--color-text-tertiary)]">
         Sem permissão.

@@ -12,6 +12,7 @@ import {
   redeemRewardSchema,
 } from "@/lib/zod/fidelidade";
 import { logAudit } from "@/lib/audit/log";
+import { can } from "@/lib/auth/capabilities";
 
 type State = { error?: string; ok?: boolean };
 
@@ -21,6 +22,7 @@ async function ctx() {
     userId: user.id,
     shopId: membership.barbershop!.id,
     role: membership.role,
+    capabilities: membership.capabilities ?? null,
   };
 }
 
@@ -45,8 +47,8 @@ export async function saveLoyaltySettingsAction(
   fd: FormData
 ): Promise<State> {
   const c = await ctx();
-  if (c.role !== "gestor")
-    return { error: "Apenas gestor pode alterar configurações." };
+  if (!can(c, "fidelidade.gerenciar"))
+    return { error: "Sem permissão para alterar configurações." };
 
   const punchServiceIds = fd.getAll("punch_card_service_ids").map(String);
 
@@ -125,8 +127,8 @@ export async function saveLoyaltyRewardAction(
   fd: FormData
 ): Promise<State> {
   const c = await ctx();
-  if (c.role !== "gestor")
-    return { error: "Apenas gestor pode gerenciar recompensas." };
+  if (!can(c, "fidelidade.gerenciar"))
+    return { error: "Sem permissão para gerenciar recompensas." };
 
   const parsed = loyaltyRewardSchema.safeParse({
     id: fd.get("id") || undefined,
@@ -191,8 +193,8 @@ export async function deleteLoyaltyRewardAction(
   fd: FormData
 ): Promise<State> {
   const c = await ctx();
-  if (c.role !== "gestor")
-    return { error: "Apenas gestor pode excluir recompensas." };
+  if (!can(c, "fidelidade.gerenciar"))
+    return { error: "Sem permissão para excluir recompensas." };
   const parsed = loyaltyRewardDeleteSchema.safeParse({ id: fd.get("id") ?? "" });
   if (!parsed.success) return { error: flatten(parsed.error.issues) };
   const supabase = await createClient();
@@ -223,7 +225,7 @@ export async function redeemRewardAction(
   fd: FormData
 ): Promise<State> {
   const c = await ctx();
-  if (c.role === "barbeiro")
+  if (!can(c, "fidelidade.gerenciar"))
     return { error: "Sem permissão para resgatar." };
   const parsed = redeemRewardSchema.safeParse({
     client_id: fd.get("client_id") ?? "",
@@ -245,7 +247,7 @@ export async function cancelRedemptionAction(
   fd: FormData
 ): Promise<State> {
   const c = await ctx();
-  if (c.role === "barbeiro")
+  if (!can(c, "fidelidade.gerenciar"))
     return { error: "Sem permissão para cancelar resgate." };
   const parsed = cancelRedemptionSchema.safeParse({ id: fd.get("id") ?? "" });
   if (!parsed.success) return { error: flatten(parsed.error.issues) };
@@ -267,8 +269,8 @@ export async function adjustPointsAction(
   fd: FormData
 ): Promise<State> {
   const c = await ctx();
-  if (c.role !== "gestor")
-    return { error: "Apenas gestor pode ajustar pontos." };
+  if (!can(c, "fidelidade.gerenciar"))
+    return { error: "Sem permissão para ajustar pontos." };
   const parsed = adjustPointsSchema.safeParse({
     client_id: fd.get("client_id") ?? "",
     points: fd.get("points") ?? 0,
@@ -311,7 +313,7 @@ export async function expireOldPointsAction(
   _fd: FormData
 ): Promise<State> {
   const c = await ctx();
-  if (c.role !== "gestor") return { error: "Apenas gestor." };
+  if (!can(c, "fidelidade.gerenciar")) return { error: "Sem permissão." };
   const supabase = await createClient();
   const { error } = await supabase.rpc("fn_expire_old_points", {
     p_shop: c.shopId,
@@ -326,7 +328,7 @@ export async function awardBirthdayBonusAction(
   _fd: FormData
 ): Promise<State> {
   const c = await ctx();
-  if (c.role !== "gestor") return { error: "Apenas gestor." };
+  if (!can(c, "fidelidade.gerenciar")) return { error: "Sem permissão." };
   const supabase = await createClient();
   const { error } = await supabase.rpc("fn_award_birthday_bonus", {
     p_shop: c.shopId,

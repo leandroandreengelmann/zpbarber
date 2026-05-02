@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { createClient } from "@/lib/supabase/server";
 import { requireBarbershop } from "@/lib/auth/guards";
+import { can } from "@/lib/auth/capabilities";
 import type { LoyaltyRewardType } from "@/lib/zod/fidelidade";
 import { saveLoyaltyRewardAction } from "../actions";
 import { RewardForm } from "./_components/reward-form";
@@ -19,7 +20,7 @@ import { RewardCard, RewardRow } from "./_components/reward-row";
 
 export default async function FidelidadeRecompensasPage() {
   const { membership } = await requireBarbershop();
-  if (membership.role !== "gestor") redirect("/app/fidelidade");
+  if (!can(membership, "fidelidade.gerenciar")) redirect("/app/fidelidade");
   const shopId = membership.barbershop!.id;
   const supabase = await createClient();
 

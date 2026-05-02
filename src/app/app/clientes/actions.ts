@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireBarbershop } from "@/lib/auth/guards";
 import { clientSchema } from "@/lib/zod/agenda";
+import { can } from "@/lib/auth/capabilities";
 
 type State = { error?: string; ok?: boolean };
 
@@ -88,7 +89,7 @@ export async function updateClientAction(
 
 export async function deleteClientAction(id: string) {
   const { membership } = await requireBarbershop();
-  if (membership.role !== "gestor") throw new Error("apenas gestores");
+  if (!can(membership, "clientes.gerenciar")) throw new Error("Sem permissão");
   const supabase = await createClient();
   const { error } = await supabase
     .from("clients")

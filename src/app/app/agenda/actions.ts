@@ -14,6 +14,7 @@ import {
   partsInTimezone,
 } from "@/lib/format";
 import { dispatchAppointmentMessages } from "@/lib/whatsapp/dispatch";
+import { can } from "@/lib/auth/capabilities";
 
 type State = { error?: string; ok?: boolean };
 type ClientCreateState = {
@@ -28,6 +29,7 @@ async function ensureStaff() {
     userId: user.id,
     shopId: membership.barbershop!.id,
     role: membership.role,
+    capabilities: membership.capabilities ?? null,
     timezone:
       (membership.barbershop as { timezone?: string | null } | null)?.timezone ??
       "America/Sao_Paulo",
@@ -91,8 +93,8 @@ export async function createAppointmentAction(
     return { error: parsed.error.issues.map((i) => i.message).join("; ") };
   }
   const d = parsed.data;
-  if (ctx.role === "barbeiro" && d.barber_id !== ctx.userId) {
-    return { error: "Barbeiros só podem criar agendamentos para si mesmos." };
+  if (!can(ctx, "agenda.gerenciar") && d.barber_id !== ctx.userId) {
+    return { error: "Você só pode criar agendamentos para si mesmo." };
   }
   const startUtc = localToUtcIso(d.scheduled_at, ctx.timezone);
   if (new Date(startUtc).getTime() < Date.now() - 60_000) {
@@ -199,8 +201,8 @@ export async function updateAppointmentAction(
     return { error: parsed.error.issues.map((i) => i.message).join("; ") };
   }
   const d = parsed.data;
-  if (ctx.role === "barbeiro" && d.barber_id !== ctx.userId) {
-    return { error: "Barbeiros só podem editar agendamentos próprios." };
+  if (!can(ctx, "agenda.gerenciar") && d.barber_id !== ctx.userId) {
+    return { error: "Você só pode editar agendamentos próprios." };
   }
   const supabase = await createClient();
   const startIso = localToUtcIso(d.scheduled_at, ctx.timezone);
@@ -239,7 +241,7 @@ export async function setAppointmentStatusAction(id: string, status: string) {
 
 export async function deleteAppointmentAction(id: string) {
   const { membership } = await requireBarbershop();
-  if (membership.role !== "gestor") throw new Error("apenas gestores");
+  if (!can(membership, "agenda.gerenciar")) throw new Error("Sem permissão");
   const supabase = await createClient();
   const { error } = await supabase
     .from("appointments")

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { requireBarbershop } from "@/lib/auth/guards";
+import { can } from "@/lib/auth/capabilities";
 
 type State = { error?: string; ok?: boolean };
 
@@ -20,8 +21,8 @@ const payoutSchema = z.object({
 
 async function ensureManager() {
   const { user, membership } = await requireBarbershop();
-  if (membership.role !== "gestor") {
-    return { error: "apenas gestores podem registrar pagamentos" } as const;
+  if (!can(membership, "comissoes.gerenciar")) {
+    return { error: "Sem permissão para registrar pagamentos." } as const;
   }
   return { user, shopId: membership.barbershop!.id } as const;
 }

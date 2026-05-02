@@ -471,6 +471,7 @@ export type Database = {
       barbershop_members: {
         Row: {
           barbershop_id: string
+          capabilities: string[] | null
           created_at: string
           is_active: boolean
           is_commissioned: boolean
@@ -479,6 +480,7 @@ export type Database = {
         }
         Insert: {
           barbershop_id: string
+          capabilities?: string[] | null
           created_at?: string
           is_active?: boolean
           is_commissioned?: boolean
@@ -487,6 +489,7 @@ export type Database = {
         }
         Update: {
           barbershop_id?: string
+          capabilities?: string[] | null
           created_at?: string
           is_active?: boolean
           is_commissioned?: boolean

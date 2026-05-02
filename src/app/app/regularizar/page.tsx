@@ -8,6 +8,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { requireBarbershop } from "@/lib/auth/guards";
+import { can } from "@/lib/auth/capabilities";
 import { createClient } from "@/lib/supabase/server";
 import { getBarbershopBillingState } from "@/lib/billing/access";
 import { formatDateBR, formatMoney } from "@/lib/format";
@@ -39,7 +40,7 @@ const STATE_DESCRIPTION: Record<string, string> = {
 export default async function RegularizarPage() {
   const { membership } = await requireBarbershop();
   const shopId = membership.barbershop!.id;
-  const isGestor = membership.role === "gestor";
+  const isGestor = can(membership, "configuracoes.gerenciar");
 
   const billing = await getBarbershopBillingState(shopId);
 

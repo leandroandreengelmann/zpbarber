@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { requireBarbershop } from "@/lib/auth/guards";
 import { logAudit } from "@/lib/audit/log";
 import { subscribeShopToPlan } from "@/lib/billing/subscribe";
+import { can } from "@/lib/auth/capabilities";
 
 type State = { error?: string; ok?: boolean };
 
@@ -12,8 +13,8 @@ export async function subscribeMyShopAction(
   formData: FormData
 ): Promise<State> {
   const { membership } = await requireBarbershop();
-  if (membership.role !== "gestor")
-    return { error: "Apenas o gestor pode assinar um plano." };
+  if (!can(membership, "configuracoes.gerenciar"))
+    return { error: "Sem permissão para assinar um plano." };
 
   const shopId = membership.barbershop!.id;
   const planId = String(formData.get("plan_id") ?? "").trim();

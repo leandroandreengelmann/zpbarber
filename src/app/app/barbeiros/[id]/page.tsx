@@ -4,6 +4,7 @@ import {
   ClockIcon,
   PercentIcon,
   ScissorsIcon,
+  ShieldCheckIcon,
   StarIcon,
   UserCircleIcon,
 } from "@phosphor-icons/react/dist/ssr";
@@ -30,6 +31,7 @@ import {
 } from "@/components/ui/tabs";
 import { createClient } from "@/lib/supabase/server";
 import { requireBarbershop } from "@/lib/auth/guards";
+import { can, type Capability } from "@/lib/auth/capabilities";
 import {
   clearBarberWorkingHoursAction,
   createBarberTimeOffAction,
@@ -39,7 +41,9 @@ import {
   saveBarberWorkingHoursAction,
   setBarberCommissionedAction,
   updateBarberProfileAction,
+  updateMemberPermissionsAction,
 } from "./actions";
+import { PermissionsForm } from "./permissions-form";
 import { BarberProfileForm } from "./barber-profile-form";
 import {
   BarberServicesForm,
@@ -75,7 +79,7 @@ export default async function BarberDetailPage({
   const { id } = await params;
   const { user, membership } = await requireBarbershop();
   const shopId = membership.barbershop!.id;
-  const isManager = membership.role === "gestor";
+  const isManager = can(membership, "equipe.gerenciar");
   const isSelf = user.id === id;
   const canEdit = isManager || isSelf;
 
@@ -94,7 +98,7 @@ export default async function BarberDetailPage({
   ] = await Promise.all([
     supabase
       .from("barbershop_members")
-      .select("role, is_active, is_commissioned, user:profiles(id, full_name, phone, avatar_url)")
+      .select("role, is_active, is_commissioned, capabilities, user:profiles(id, full_name, phone, avatar_url)")
       .eq("barbershop_id", shopId)
       .eq("user_id", id)
       .maybeSingle(),
@@ -156,6 +160,7 @@ export default async function BarberDetailPage({
   const createTimeOffAction = createBarberTimeOffAction.bind(null, id);
   const deleteTimeOffAction = deleteBarberTimeOffAction.bind(null, id);
   const updateProfileAction = updateBarberProfileAction.bind(null, id);
+  const updatePermissionsAction = updateMemberPermissionsAction.bind(null, id);
 
   return (
     <div className="mx-auto grid w-full max-w-4xl gap-4 sm:gap-6">
@@ -208,38 +213,66 @@ export default async function BarberDetailPage({
       )}
 
       <Tabs defaultValue="services">
-        <div className="relative -mx-4 sm:mx-0">
-          <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-4 bg-gradient-to-r from-[var(--color-bg-primary)] to-transparent sm:hidden" />
-          <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-4 bg-gradient-to-l from-[var(--color-bg-primary)] to-transparent sm:hidden" />
-          <div className="overflow-x-auto px-4 sm:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            <TabsList className="w-max">
-              <TabsTrigger value="services" aria-label="Serviços" className="min-h-11 sm:min-h-0">
-                <ScissorsIcon size={22} weight="duotone" />
-                <span className="hidden sm:inline">Serviços</span>
-              </TabsTrigger>
-              <TabsTrigger value="commission" aria-label="Comissão" className="min-h-11 sm:min-h-0">
-                <PercentIcon size={22} weight="duotone" />
-                <span className="hidden sm:inline">Comissão</span>
-              </TabsTrigger>
-              <TabsTrigger value="hours" aria-label="Horários" className="min-h-11 sm:min-h-0">
-                <ClockIcon size={22} weight="duotone" />
-                <span className="hidden sm:inline">Horários</span>
-              </TabsTrigger>
-              <TabsTrigger value="time-off" aria-label="Folgas" className="min-h-11 sm:min-h-0">
-                <ClockCounterClockwiseIcon size={22} weight="duotone" />
-                <span className="hidden sm:inline">Folgas</span>
-              </TabsTrigger>
-              <TabsTrigger value="reviews" aria-label="Avaliações" className="min-h-11 sm:min-h-0">
-                <StarIcon size={22} weight="duotone" />
-                <span className="hidden sm:inline">Avaliações</span>
-              </TabsTrigger>
-              <TabsTrigger value="profile" aria-label="Perfil" className="min-h-11 sm:min-h-0">
-                <UserCircleIcon size={22} weight="duotone" />
-                <span className="hidden sm:inline">Perfil</span>
-              </TabsTrigger>
-            </TabsList>
-          </div>
-        </div>
+        <TabsList className={`grid !h-auto w-full bg-transparent p-0 ${isManager ? "grid-cols-4" : "grid-cols-3"} gap-2 sm:!flex sm:!h-8 sm:w-max sm:gap-0 sm:bg-muted sm:p-[3px]`}>
+          <TabsTrigger
+            value="services"
+            aria-label="Serviços"
+            className="h-auto min-h-[64px] flex-col gap-1.5 whitespace-normal rounded-lg border border-border bg-muted/40 px-2 py-2 text-[13px] font-medium leading-tight data-active:border-primary/50 data-active:shadow-[0_2px_10px_-2px_color-mix(in_srgb,var(--primary)_50%,transparent)] sm:min-h-0 sm:flex-row sm:gap-1.5 sm:rounded-md sm:border-transparent sm:bg-transparent sm:px-1.5 sm:py-0.5 sm:text-sm"
+          >
+            <ScissorsIcon weight="duotone" className="size-6 sm:size-[22px]" />
+            <span>Serviços</span>
+          </TabsTrigger>
+          <TabsTrigger
+            value="commission"
+            aria-label="Comissão"
+            className="h-auto min-h-[64px] flex-col gap-1.5 whitespace-normal rounded-lg border border-border bg-muted/40 px-2 py-2 text-[13px] font-medium leading-tight data-active:border-primary/50 data-active:shadow-[0_2px_10px_-2px_color-mix(in_srgb,var(--primary)_50%,transparent)] sm:min-h-0 sm:flex-row sm:gap-1.5 sm:rounded-md sm:border-transparent sm:bg-transparent sm:px-1.5 sm:py-0.5 sm:text-sm"
+          >
+            <PercentIcon weight="duotone" className="size-6 sm:size-[22px]" />
+            <span>Comissão</span>
+          </TabsTrigger>
+          <TabsTrigger
+            value="hours"
+            aria-label="Horários"
+            className="h-auto min-h-[64px] flex-col gap-1.5 whitespace-normal rounded-lg border border-border bg-muted/40 px-2 py-2 text-[13px] font-medium leading-tight data-active:border-primary/50 data-active:shadow-[0_2px_10px_-2px_color-mix(in_srgb,var(--primary)_50%,transparent)] sm:min-h-0 sm:flex-row sm:gap-1.5 sm:rounded-md sm:border-transparent sm:bg-transparent sm:px-1.5 sm:py-0.5 sm:text-sm"
+          >
+            <ClockIcon weight="duotone" className="size-6 sm:size-[22px]" />
+            <span>Horários</span>
+          </TabsTrigger>
+          <TabsTrigger
+            value="time-off"
+            aria-label="Folgas"
+            className="h-auto min-h-[64px] flex-col gap-1.5 whitespace-normal rounded-lg border border-border bg-muted/40 px-2 py-2 text-[13px] font-medium leading-tight data-active:border-primary/50 data-active:shadow-[0_2px_10px_-2px_color-mix(in_srgb,var(--primary)_50%,transparent)] sm:min-h-0 sm:flex-row sm:gap-1.5 sm:rounded-md sm:border-transparent sm:bg-transparent sm:px-1.5 sm:py-0.5 sm:text-sm"
+          >
+            <ClockCounterClockwiseIcon weight="duotone" className="size-6 sm:size-[22px]" />
+            <span>Folgas</span>
+          </TabsTrigger>
+          <TabsTrigger
+            value="reviews"
+            aria-label="Avaliações"
+            className="h-auto min-h-[64px] flex-col gap-1.5 whitespace-normal rounded-lg border border-border bg-muted/40 px-2 py-2 text-[13px] font-medium leading-tight data-active:border-primary/50 data-active:shadow-[0_2px_10px_-2px_color-mix(in_srgb,var(--primary)_50%,transparent)] sm:min-h-0 sm:flex-row sm:gap-1.5 sm:rounded-md sm:border-transparent sm:bg-transparent sm:px-1.5 sm:py-0.5 sm:text-sm"
+          >
+            <StarIcon weight="duotone" className="size-6 sm:size-[22px]" />
+            <span>Avaliações</span>
+          </TabsTrigger>
+          <TabsTrigger
+            value="profile"
+            aria-label="Perfil"
+            className="h-auto min-h-[64px] flex-col gap-1.5 whitespace-normal rounded-lg border border-border bg-muted/40 px-2 py-2 text-[13px] font-medium leading-tight data-active:border-primary/50 data-active:shadow-[0_2px_10px_-2px_color-mix(in_srgb,var(--primary)_50%,transparent)] sm:min-h-0 sm:flex-row sm:gap-1.5 sm:rounded-md sm:border-transparent sm:bg-transparent sm:px-1.5 sm:py-0.5 sm:text-sm"
+          >
+            <UserCircleIcon weight="duotone" className="size-6 sm:size-[22px]" />
+            <span>Perfil</span>
+          </TabsTrigger>
+          {isManager && (
+            <TabsTrigger
+              value="permissions"
+              aria-label="Permissões"
+              className="h-auto min-h-[64px] flex-col gap-1.5 whitespace-normal rounded-lg border border-border bg-muted/40 px-2 py-2 text-[13px] font-medium leading-tight data-active:border-primary/50 data-active:shadow-[0_2px_10px_-2px_color-mix(in_srgb,var(--primary)_50%,transparent)] sm:min-h-0 sm:flex-row sm:gap-1.5 sm:rounded-md sm:border-transparent sm:bg-transparent sm:px-1.5 sm:py-0.5 sm:text-sm"
+            >
+              <ShieldCheckIcon weight="duotone" className="size-6 sm:size-[22px]" />
+              <span>Permissões</span>
+            </TabsTrigger>
+          )}
+        </TabsList>
 
         <TabsContent value="services">
           <Card>
@@ -436,6 +469,37 @@ export default async function BarberDetailPage({
             </CardContent>
           </Card>
         </TabsContent>
+
+        {isManager && (
+          <TabsContent value="permissions">
+            <Card>
+              <CardHeader>
+                <CardTitle>Função e permissões</CardTitle>
+                <CardDescription>
+                  Defina o que essa pessoa pode acessar no sistema. Comece por
+                  uma função padrão e personalize se precisar.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {member.role === "super_admin" ? (
+                  <Alert variant="info" title="Super admin">
+                    O super admin tem todas as permissões e não pode ser
+                    alterado por aqui.
+                  </Alert>
+                ) : (
+                  <PermissionsForm
+                    action={updatePermissionsAction}
+                    initialRole={member.role as "gestor" | "recepcionista" | "barbeiro"}
+                    initialCapabilities={
+                      (member.capabilities as Capability[] | null) ?? null
+                    }
+                    selfBlocked={user.id === id}
+                  />
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );

@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/server";
 import { requireBarbershop } from "@/lib/auth/guards";
+import { can } from "@/lib/auth/capabilities";
 import { SettingsForm, type ShopValues } from "./settings-form";
 import { HoursForm } from "./hours-form";
 import { PublicBookingToggle } from "./public-booking-toggle";
@@ -36,7 +37,7 @@ export default async function ConfiguracoesPage() {
 
   if (!shop) return null;
 
-  const isManager = membership.role === "gestor";
+  const isManager = can(membership, "configuracoes.gerenciar");
 
   return (
     <div className="mx-auto grid w-full max-w-3xl gap-6">

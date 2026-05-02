@@ -4,6 +4,7 @@ import { ArrowLeftIcon } from "@phosphor-icons/react/dist/ssr";
 import { Card, CardContent } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/server";
 import { requireBarbershop } from "@/lib/auth/guards";
+import { can } from "@/lib/auth/capabilities";
 import { formatDateBR, formatDateTimeBR } from "@/lib/format";
 import { LOYALTY_REWARD_TYPE_LABEL, type LoyaltyRewardType } from "@/lib/zod/fidelidade";
 import { RedeemForm } from "./_components/redeem-form";
@@ -47,7 +48,7 @@ export default async function FidelidadeClientPage({
 }) {
   const { clientId } = await params;
   const { membership } = await requireBarbershop();
-  const isGestor = membership.role === "gestor";
+  const isGestor = can(membership, "fidelidade.gerenciar");
   const shopId = membership.barbershop!.id;
   const supabase = await createClient();
 
@@ -98,7 +99,7 @@ export default async function FidelidadeClientPage({
   const card = punchCardRes.data;
   const rewards = rewardsRes.data ?? [];
 
-  const canManage = membership.role !== "barbeiro";
+  const canManage = can(membership, "fidelidade.gerenciar");
 
   return (
     <div className="grid gap-6">

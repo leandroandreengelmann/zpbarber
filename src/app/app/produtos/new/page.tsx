@@ -9,12 +9,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { requireBarbershop } from "@/lib/auth/guards";
+import { can } from "@/lib/auth/capabilities";
 import { ProductForm } from "../product-form";
 import { createProductAction } from "../actions";
 
 export default async function NewProductPage() {
   const { membership } = await requireBarbershop();
-  if (membership.role !== "gestor") redirect("/app/produtos");
+  if (!can(membership, "produtos.gerenciar")) redirect("/app/produtos");
 
   return (
     <div className="mx-auto grid w-full max-w-2xl gap-6">

@@ -1,7 +1,8 @@
-import { redirect } from "next/navigation";
 import { WarningCircleIcon } from "@phosphor-icons/react/dist/ssr";
 import { createClient } from "@/lib/supabase/server";
 import { requireBarbershop } from "@/lib/auth/guards";
+import { can } from "@/lib/auth/capabilities";
+import { Forbidden } from "@/app/app/_components/forbidden";
 import {
   ACTION_LABEL,
   AuditEmptyState,
@@ -32,7 +33,8 @@ export default async function ShopAuditPage({
   searchParams: SearchParams;
 }) {
   const { membership } = await requireBarbershop();
-  if (membership.role !== "gestor") redirect("/app");
+  if (!can(membership, "configuracoes.gerenciar"))
+    return <Forbidden title="Logs de auditoria" />;
   const shop = membership.barbershop!;
 
   const sp = await searchParams;

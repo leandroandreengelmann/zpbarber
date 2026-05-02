@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 import { requireBarbershop } from "@/lib/auth/guards";
+import { can } from "@/lib/auth/capabilities";
 import { getBarbershopBillingState } from "@/lib/billing/access";
 import { getAsaasConfigStatus } from "@/lib/asaas/config";
 import { PlanPicker } from "./_components/plan-picker";
@@ -16,7 +17,7 @@ import { PlanPicker } from "./_components/plan-picker";
 export default async function AssinarPage() {
   const { membership } = await requireBarbershop();
   const shopId = membership.barbershop!.id;
-  const isGestor = membership.role === "gestor";
+  const isGestor = can(membership, "configuracoes.gerenciar");
 
   if (!isGestor) {
     return (

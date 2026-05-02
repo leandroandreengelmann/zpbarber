@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { createClient } from "@/lib/supabase/server";
 import { requireBarbershop } from "@/lib/auth/guards";
+import { can } from "@/lib/auth/capabilities";
 import { formatDateBR } from "@/lib/format";
 import { Stars } from "./_components/stars";
 import { ReviewFilters } from "./_components/filters";
@@ -66,7 +67,7 @@ export default async function AvaliacoesPage({
   searchParams: Promise<SearchParams>;
 }) {
   const { membership } = await requireBarbershop();
-  const isGestor = membership.role === "gestor";
+  const isGestor = can(membership, "avaliacoes.gerenciar");
   const shopId = membership.barbershop!.id;
   const sp = await searchParams;
   const fromIso = periodToFromDate(sp.period);

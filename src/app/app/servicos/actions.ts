@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { requireBarbershop } from "@/lib/auth/guards";
 import { serviceSchema } from "@/lib/zod/catalog";
 import { parseMoneyToCents } from "@/lib/format";
+import { can } from "@/lib/auth/capabilities";
 
 type State = { error?: string; ok?: boolean };
 
@@ -20,8 +21,8 @@ function parseForm(formData: FormData) {
 
 async function ensureManager() {
   const { membership } = await requireBarbershop();
-  if (membership.role !== "gestor") {
-    return { error: "apenas gestores podem alterar" } as const;
+  if (!can(membership, "servicos.gerenciar")) {
+    return { error: "Sem permissão para alterar serviços." } as const;
   }
   return { shopId: membership.barbershop!.id } as const;
 }
