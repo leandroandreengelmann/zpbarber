@@ -228,26 +228,35 @@ export default async function AppDashboardPage() {
         <ShareShopBanner shopName={shop.name} publicUrl={publicUrl} />
       )}
 
-      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2 sm:gap-4 lg:grid-cols-4">
         {KPIS.map((kpi) => {
           const Icon = kpi.icon;
           return (
-            <Card key={kpi.label}>
-              <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
-                  <CardDescription>{kpi.label}</CardDescription>
+            <Card key={kpi.label} className="gap-2 py-3 sm:gap-4 sm:py-4">
+              <CardHeader className="px-3 pb-1 sm:px-4 sm:pb-2">
+                <div className="flex items-center justify-between gap-2">
+                  <CardDescription className="text-text-xs leading-tight sm:text-text-sm">
+                    {kpi.label}
+                  </CardDescription>
                   <div
-                    className={`flex size-8 items-center justify-center rounded-lg bg-muted ${kpi.accent}`}
+                    className={`flex size-7 shrink-0 items-center justify-center rounded-lg bg-muted sm:size-8 ${kpi.accent}`}
                   >
-                    <Icon size={28} weight="duotone" />
+                    <Icon size={20} weight="duotone" className="sm:hidden" />
+                    <Icon
+                      size={28}
+                      weight="duotone"
+                      className="hidden sm:block"
+                    />
                   </div>
                 </div>
-                <CardTitle className="text-display-sm tabular-nums">
+                <CardTitle className="text-text-xl tabular-nums sm:text-display-sm">
                   {kpi.value}
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <p className="text-xs text-muted-foreground">{kpi.hint}</p>
+              <CardContent className="px-3 sm:px-4">
+                <p className="text-text-xs leading-tight text-muted-foreground line-clamp-2">
+                  {kpi.hint}
+                </p>
               </CardContent>
             </Card>
           );
