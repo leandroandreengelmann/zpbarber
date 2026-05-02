@@ -400,9 +400,14 @@ export async function getAvailableSlotsAction(input: {
     }
   }
 
+  const todayParts = partsInTimezone(new Date(), tz);
+  const isToday = todayParts.date === date;
+  const nowMin = todayParts.totalMinutes;
+
   const slots: { start: string; label: string }[] = [];
   const step = Math.max(5, duration);
   for (let m = opensMin; m + duration <= closesMin; m += step) {
+    if (isToday && m + duration <= nowMin) continue;
     const slotEnd = m + duration;
     const conflict = busy.some(
       (b) => b.start < slotEnd && b.end > m
