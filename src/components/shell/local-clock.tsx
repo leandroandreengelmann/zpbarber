@@ -28,10 +28,10 @@ export function LocalClock({ timezone }: { timezone: string }) {
 
   return (
     <span
-      className="hidden items-center gap-1 rounded-md bg-muted px-2 py-1 text-xs font-medium tabular-nums text-muted-foreground sm:inline-flex"
+      className="hidden items-center gap-1.5 rounded-md bg-muted px-3 py-1.5 text-sm font-semibold tabular-nums text-foreground sm:inline-flex"
       title={`Horário local da barbearia (${timezone})`}
     >
-      <ClockIcon size={14} weight="duotone" />
+      <ClockIcon size={18} weight="duotone" />
       {time}
     </span>
   );
