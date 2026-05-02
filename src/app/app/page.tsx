@@ -249,7 +249,7 @@ export default async function AppDashboardPage() {
                     />
                   </div>
                 </div>
-                <CardTitle className="text-text-xl tabular-nums sm:text-display-sm">
+                <CardTitle className="text-display-xs font-bold tabular-nums text-[var(--color-text-primary)] sm:text-display-sm">
                   {kpi.value}
                 </CardTitle>
               </CardHeader>
