@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useEffect } from "react";
-import { FloppyDiskIcon, PercentIcon } from "@phosphor-icons/react";
+import { FloppyDiskIcon } from "@phosphor-icons/react";
 import { notify } from "@/components/ui/toast";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -33,11 +33,6 @@ export function BarberCommissionForm({
       <fieldset disabled={disabled || pending} className="grid gap-3">
         <label className="flex items-start justify-between gap-3 rounded-xl border border-[var(--color-border-secondary)] bg-[var(--color-bg-primary)] px-4 py-3.5">
           <div className="flex items-start gap-3">
-            <PercentIcon
-              size={28}
-              weight="duotone"
-              className="mt-0.5 text-[var(--color-blue-600)]"
-            />
             <div className="grid gap-0.5">
               <span className="text-text-sm font-semibold text-[var(--color-text-primary)]">
                 Recebe comissão
