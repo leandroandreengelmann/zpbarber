@@ -296,7 +296,7 @@ export default async function AppDashboardPage() {
                 {upcoming.map((a) => (
                   <li
                     key={a.id}
-                    className="flex items-center gap-4 px-6 py-4"
+                    className="flex items-center gap-3 px-4 py-3 sm:gap-4 sm:px-6 sm:py-4"
                   >
                     <div className="flex w-16 shrink-0 flex-col items-center justify-center rounded-lg bg-[var(--color-bg-secondary)] px-2 py-2">
                       <span className="inline-flex items-center gap-1 text-text-xs font-medium uppercase text-[var(--color-text-tertiary)]">
@@ -356,7 +356,7 @@ export default async function AppDashboardPage() {
                   {topBarbers.map((b, i) => (
                     <li
                       key={b.id}
-                      className="flex items-center gap-3 px-6 py-3"
+                      className="flex items-center gap-3 px-4 py-3 sm:px-6"
                     >
                       <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-[var(--color-blue-50)] text-text-xs font-bold text-[var(--color-blue-700)]">
                         {i + 1}

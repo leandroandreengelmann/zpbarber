@@ -25,7 +25,7 @@ export default async function AssinarPage() {
         <h1 className="text-display-xs font-semibold tracking-tight text-[var(--color-text-primary)]">
           Assinar plano
         </h1>
-        <Card className="grid gap-2 p-6">
+        <Card className="grid gap-2 p-4 sm:p-6">
           <div className="flex items-center gap-2 text-[var(--color-text-warning-primary)]">
             <WarningCircleIcon size={28} weight="duotone" />
             <span className="text-text-md font-semibold">Acesso restrito</span>

@@ -113,7 +113,7 @@ export default async function ClientesPage({
       </div>
 
       <Card className="p-0">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--color-border-secondary)] px-6 py-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--color-border-secondary)] px-4 py-3 sm:px-6 sm:py-4">
           <div className="flex items-center gap-2">
             <div className="flex size-8 items-center justify-center rounded-lg bg-[var(--color-blue-50)] text-[var(--color-blue-600)]">
               <UsersThreeIcon size={28} weight="duotone" />
@@ -175,7 +175,7 @@ export default async function ClientesPage({
                 return (
                   <li
                     key={c.id}
-                    className="flex flex-wrap items-center gap-4 px-6 py-4"
+                    className="flex flex-wrap items-center gap-3 px-4 py-3 sm:gap-4 sm:px-6 sm:py-4"
                   >
                     <Avatar className="size-10">
                       <AvatarFallback className="text-text-xs font-medium">

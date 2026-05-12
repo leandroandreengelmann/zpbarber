@@ -374,7 +374,7 @@ export function NewSaleForm({
           </button>
         </div>
         {items.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-[var(--color-border-secondary)] p-6 text-center text-text-sm text-[var(--color-text-tertiary)]">
+          <div className="rounded-lg border border-dashed border-[var(--color-border-secondary)] p-4 sm:p-6 text-center text-text-sm text-[var(--color-text-tertiary)]">
             Selecione um serviço acima ou adicione um item livre.
           </div>
         ) : (

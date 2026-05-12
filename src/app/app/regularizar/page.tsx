@@ -124,7 +124,7 @@ export default async function RegularizarPage() {
       </Card>
 
       {showStaffNotice ? (
-        <Card className="grid gap-3 p-6">
+        <Card className="grid gap-3 p-4 sm:p-6">
           <p className="text-text-md font-semibold text-[var(--color-text-primary)]">
             Peça ao gestor para regularizar.
           </p>
@@ -135,7 +135,7 @@ export default async function RegularizarPage() {
           </p>
         </Card>
       ) : isContactOnly ? (
-        <Card className="grid gap-3 p-6">
+        <Card className="grid gap-3 p-4 sm:p-6">
           <p className="text-text-md text-[var(--color-text-secondary)]">
             Para reativar sua conta, fale com o suporte do ZP Barber.
           </p>
@@ -147,7 +147,7 @@ export default async function RegularizarPage() {
           </a>
         </Card>
       ) : invoice ? (
-        <Card className="grid gap-5 p-6">
+        <Card className="grid gap-4 p-4 sm:gap-5 sm:p-6">
           <div className="flex items-start justify-between gap-4">
             <div className="grid gap-1">
               <span className="text-text-xs uppercase tracking-wide text-[var(--color-text-tertiary)]">

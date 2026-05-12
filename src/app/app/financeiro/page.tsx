@@ -189,7 +189,7 @@ export default async function FinanceiroPage({
       </div>
 
       <Card>
-        <CardContent className="grid gap-4 p-6">
+        <CardContent className="grid gap-4 p-4 sm:p-6">
           <div className="flex items-center gap-2">
             <ChartLineUpIcon
               size={24}
@@ -206,7 +206,7 @@ export default async function FinanceiroPage({
 
       <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
         <Card>
-          <CardContent className="grid gap-4 p-6">
+          <CardContent className="grid gap-4 p-4 sm:p-6">
             <div className="flex items-center gap-2">
               <CurrencyDollarSimpleIcon
                 size={24}
@@ -228,7 +228,7 @@ export default async function FinanceiroPage({
         </Card>
 
         <Card>
-          <CardContent className="grid gap-4 p-6">
+          <CardContent className="grid gap-4 p-4 sm:p-6">
             <div className="flex items-center gap-2">
               <TagIcon
                 size={24}
@@ -249,7 +249,7 @@ export default async function FinanceiroPage({
 
       <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
         <Card>
-          <CardContent className="grid gap-4 p-6">
+          <CardContent className="grid gap-4 p-4 sm:p-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <CalendarBlankIcon
@@ -299,7 +299,7 @@ export default async function FinanceiroPage({
         </Card>
 
         <Card>
-          <CardContent className="grid gap-4 p-6">
+          <CardContent className="grid gap-4 p-4 sm:p-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <CalendarBlankIcon

@@ -19,7 +19,7 @@ export default async function CaixaReportDetailPage({
     return (
       <div className="mx-auto w-full max-w-3xl">
         <Card>
-          <CardContent className="p-6 text-center">
+          <CardContent className="p-4 sm:p-6 text-center">
             <p className="text-text-md text-[var(--color-text-tertiary)]">
               Apenas gestor e recepcionista podem visualizar relatórios de caixa.
             </p>
