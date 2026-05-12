@@ -7,7 +7,14 @@ import {
   ReceiptIcon,
   TagIcon,
 } from "@phosphor-icons/react/dist/ssr";
-import { Card, CardContent } from "@/components/ui/card";
+import type { Icon } from "@phosphor-icons/react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/server";
 import { requireBarbershop } from "@/lib/auth/guards";
 import { can } from "@/lib/auth/capabilities";
@@ -152,29 +159,29 @@ export default async function FinanceiroPage({
         />
       </Card>
 
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-2 sm:gap-4 lg:grid-cols-5">
         <KPI
           label="Receita"
           value={formatMoney(summary.revenue_cents + summary.receivables_cents)}
-          icon={<HandCoinsIcon size={28} weight="duotone" />}
+          icon={HandCoinsIcon}
           tone="success"
         />
         <KPI
           label="Despesas"
           value={formatMoney(summary.expenses_cents)}
-          icon={<ReceiptIcon size={28} weight="duotone" />}
+          icon={ReceiptIcon}
           tone="error"
         />
         <KPI
           label="Comissões"
           value={formatMoney(summary.commissions_cents)}
-          icon={<CreditCardIcon size={28} weight="duotone" />}
+          icon={CreditCardIcon}
           tone="info"
         />
         <KPI
           label="Líquido"
           value={formatMoney(summary.net_cents)}
-          icon={<ChartLineUpIcon size={28} weight="duotone" />}
+          icon={ChartLineUpIcon}
           tone={summary.net_cents >= 0 ? "success" : "error"}
         />
         <KPI
@@ -183,8 +190,9 @@ export default async function FinanceiroPage({
             weekPay.reduce((s, e) => s + e.amount_cents, 0) +
               weekRec.reduce((s, r) => s + r.amount_cents, 0)
           )}
-          icon={<CalendarBlankIcon size={28} weight="duotone" />}
+          icon={CalendarBlankIcon}
           tone="warning"
+          className="col-span-2 lg:col-span-1"
         />
       </div>
 
@@ -349,7 +357,7 @@ export default async function FinanceiroPage({
         </Card>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
         <MiniKPI
           label="Em aberto a pagar"
           value={formatMoney(summary.open_payable_cents)}
@@ -422,13 +430,15 @@ function BreakdownList({
 function KPI({
   label,
   value,
-  icon,
+  icon: IconCmp,
   tone,
+  className,
 }: {
   label: string;
   value: string;
-  icon: React.ReactNode;
+  icon: Icon;
   tone: "success" | "error" | "warning" | "info";
+  className?: string;
 }) {
   const TONES = {
     success:
@@ -440,22 +450,23 @@ function KPI({
     info: "border-[var(--color-blue-200)] bg-[var(--color-blue-50)] text-[var(--color-blue-700)]",
   };
   return (
-    <Card className="p-5">
-      <div className="flex items-start justify-between">
-        <div className="grid gap-1">
-          <span className="text-text-xs font-medium uppercase tracking-wide text-[var(--color-text-tertiary)]">
+    <Card className={`gap-2 py-3 sm:gap-4 sm:py-4 ${className ?? ""}`}>
+      <CardHeader className="px-3 pb-1 sm:px-4 sm:pb-2">
+        <div className="flex items-center justify-between gap-2">
+          <CardDescription className="text-text-xs leading-tight sm:text-text-sm">
             {label}
-          </span>
-          <span className="text-display-xs font-semibold tabular-nums text-[var(--color-text-primary)]">
-            {value}
-          </span>
+          </CardDescription>
+          <div
+            className={`flex size-7 shrink-0 items-center justify-center rounded-lg border sm:size-8 ${TONES[tone]}`}
+          >
+            <IconCmp size={20} weight="duotone" className="sm:hidden" />
+            <IconCmp size={28} weight="duotone" className="hidden sm:block" />
+          </div>
         </div>
-        <div
-          className={`flex size-10 items-center justify-center rounded-lg border ${TONES[tone]}`}
-        >
-          {icon}
-        </div>
-      </div>
+        <CardTitle className="text-display-xs font-bold tabular-nums text-[var(--color-text-primary)] sm:text-display-sm">
+          {value}
+        </CardTitle>
+      </CardHeader>
     </Card>
   );
 }
@@ -477,12 +488,12 @@ function MiniKPI({
   };
   return (
     <div
-      className={`grid gap-1 rounded-lg border p-4 ${TONES[tone]}`}
+      className={`grid gap-0.5 rounded-lg border p-3 sm:gap-1 sm:p-4 ${TONES[tone]}`}
     >
-      <span className="text-text-xs font-medium uppercase tracking-wide opacity-80">
+      <span className="text-text-xs font-medium leading-tight opacity-80">
         {label}
       </span>
-      <span className="text-text-xl font-semibold tabular-nums">
+      <span className="text-text-lg font-bold tabular-nums sm:text-text-xl">
         {value}
       </span>
     </div>
