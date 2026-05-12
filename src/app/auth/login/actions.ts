@@ -2,61 +2,8 @@
 
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { ACTIVE_TENANT_COOKIE } from "@/lib/auth/current-tenant";
-import { safeNext } from "@/lib/auth/safe-redirect";
-
-export async function signInAction(formData: FormData) {
-  const email = String(formData.get("email") ?? "").trim();
-  const password = String(formData.get("password") ?? "");
-  const nextRaw = String(formData.get("next") ?? "");
-
-  const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) redirect(`/auth/login?error=invalid-credentials`);
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect("/auth/login?error=invalid-credentials");
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("is_super_admin, is_client")
-    .eq("id", user.id)
-    .maybeSingle();
-
-  if (profile?.is_super_admin) redirect(safeNext(nextRaw, "/admin"));
-
-  const { data: memberships } = await supabase
-    .from("barbershop_members")
-    .select("barbershop_id")
-    .eq("user_id", user.id)
-    .eq("is_active", true);
-
-  if (!memberships || memberships.length === 0) {
-    if (!profile?.is_client) {
-      const admin = createAdminClient();
-      await admin.from("profiles").update({ is_client: true }).eq("id", user.id);
-    }
-    redirect("/conta");
-  }
-
-  const c = await cookies();
-  if (memberships.length === 1) {
-    c.set(ACTIVE_TENANT_COOKIE, memberships[0].barbershop_id, {
-      httpOnly: true,
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
-      path: "/",
-      maxAge: 60 * 60 * 24 * 30,
-    });
-    redirect(safeNext(nextRaw, "/app"));
-  }
-
-  redirect("/auth/select-tenant");
-}
 
 export async function signOutAction() {
   const supabase = await createClient();

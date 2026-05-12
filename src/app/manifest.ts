@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "ZP Barber",
     short_name: "ZP Barber",
     description: "Gestão completa para barbearias",
-    start_url: "/app",
+    start_url: "/auth/login?next=/app",
     scope: "/",
     display: "standalone",
     orientation: "portrait",

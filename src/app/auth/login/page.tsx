@@ -9,7 +9,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { getCurrentUser } from "@/lib/auth/current-user";
-import { signInAction } from "./actions";
 import { PasswordInput } from "./password-input";
 import { LoginSubmitButton } from "./submit-button";
 
@@ -61,7 +60,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Search
             </div>
           )}
 
-          <form action={signInAction} className="grid gap-5">
+          <form action="/api/auth/login" method="POST" className="grid gap-5">
             <input type="hidden" name="next" value={sp.next ?? ""} />
 
             <div className="grid gap-1.5">
