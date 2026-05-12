@@ -22,47 +22,108 @@ export function DailyChart({ data }: { data: Point[] }) {
   );
   const totalRevenue = data.reduce((s, p) => s + p.revenue_cents, 0);
   const totalExpenses = data.reduce((s, p) => s + p.expenses_cents, 0);
+  const hasExpenses = totalExpenses > 0;
+  const labelStep = data.length > 14 ? Math.ceil(data.length / 7) : 1;
+  const BAR_AREA = 170;
 
   return (
-    <div className="grid gap-4">
-      <div className="flex flex-wrap items-center gap-4 text-text-sm">
-        <span className="inline-flex items-center gap-2">
-          <span className="size-3 rounded-sm bg-[var(--color-success-500)]" />
-          Receita {formatMoney(totalRevenue)}
-        </span>
-        <span className="inline-flex items-center gap-2">
-          <span className="size-3 rounded-sm bg-[var(--color-error-500)]" />
-          Despesas {formatMoney(totalExpenses)}
+    <div className="grid gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-text-sm">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+          <span className="inline-flex items-center gap-1.5">
+            <span className="size-2.5 rounded-sm bg-[var(--color-success-500)]" />
+            <span className="text-[var(--color-text-tertiary)]">Receita</span>
+            <span className="font-semibold tabular-nums text-[var(--color-text-primary)]">
+              {formatMoney(totalRevenue)}
+            </span>
+          </span>
+          {hasExpenses && (
+            <span className="inline-flex items-center gap-1.5">
+              <span className="size-2.5 rounded-sm bg-[var(--color-error-500)]" />
+              <span className="text-[var(--color-text-tertiary)]">Despesas</span>
+              <span className="font-semibold tabular-nums text-[var(--color-text-primary)]">
+                {formatMoney(totalExpenses)}
+              </span>
+            </span>
+          )}
+        </div>
+        <span className="text-text-xs tabular-nums text-[var(--color-text-tertiary)]">
+          Pico: {formatMoney(max)}
         </span>
       </div>
-      <div className="flex w-full items-end gap-1 pb-2" style={{ minHeight: "180px" }}>
-        {data.map((p) => {
-          const rh = (p.revenue_cents / max) * 160;
-          const eh = (p.expenses_cents / max) * 160;
-          return (
+
+      <div className="relative">
+        <div
+          className="pointer-events-none absolute inset-x-0 top-0 grid"
+          style={{ height: `${BAR_AREA}px` }}
+        >
+          {[0, 1, 2, 3].map((i) => (
             <div
-              key={p.day}
-              className="flex min-w-0 flex-1 flex-col items-center gap-1"
-              title={`${formatDateBR(p.day)} · Receita ${formatMoney(
-                p.revenue_cents
-              )} · Despesas ${formatMoney(p.expenses_cents)}`}
-            >
-              <div className="flex h-[160px] w-full items-end justify-center gap-0.5">
+              key={i}
+              className="border-t border-dashed border-[var(--color-border-secondary)]"
+            />
+          ))}
+        </div>
+
+        <div
+          className="relative flex w-full items-end gap-0.5 sm:gap-1"
+          style={{ height: `${BAR_AREA}px` }}
+        >
+          {data.map((p) => {
+            const rh = Math.max(
+              (p.revenue_cents / max) * BAR_AREA,
+              p.revenue_cents > 0 ? 2 : 0
+            );
+            const eh = Math.max(
+              (p.expenses_cents / max) * BAR_AREA,
+              p.expenses_cents > 0 ? 2 : 0
+            );
+            return (
+              <div
+                key={p.day}
+                className="flex min-w-0 flex-1 flex-col items-center justify-end"
+                title={`${formatDateBR(p.day)} · Receita ${formatMoney(
+                  p.revenue_cents
+                )}${
+                  hasExpenses
+                    ? ` · Despesas ${formatMoney(p.expenses_cents)}`
+                    : ""
+                }`}
+              >
                 <div
-                  className="w-1/3 max-w-[12px] rounded-t bg-[var(--color-success-500)]"
-                  style={{ height: `${Math.max(rh, p.revenue_cents > 0 ? 2 : 0)}px` }}
-                />
-                <div
-                  className="w-1/3 max-w-[12px] rounded-t bg-[var(--color-error-500)]"
-                  style={{ height: `${Math.max(eh, p.expenses_cents > 0 ? 2 : 0)}px` }}
-                />
+                  className={`flex w-full items-end justify-center ${
+                    hasExpenses ? "gap-0.5" : ""
+                  }`}
+                  style={{ height: `${BAR_AREA}px` }}
+                >
+                  <div
+                    className={`${
+                      hasExpenses ? "w-1/2 max-w-[10px]" : "w-2/3 max-w-[18px]"
+                    } rounded-t bg-[var(--color-success-500)]`}
+                    style={{ height: `${rh}px` }}
+                  />
+                  {hasExpenses && (
+                    <div
+                      className="w-1/2 max-w-[10px] rounded-t bg-[var(--color-error-500)]"
+                      style={{ height: `${eh}px` }}
+                    />
+                  )}
+                </div>
               </div>
-              <span className="text-[10px] tabular-nums text-[var(--color-text-tertiary)]">
-                {formatDateBR(p.day, "dd/MM")}
-              </span>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
+
+        <div className="mt-1.5 flex w-full gap-0.5 sm:gap-1">
+          {data.map((p, idx) => (
+            <span
+              key={p.day}
+              className="min-w-0 flex-1 truncate text-center text-[10px] tabular-nums text-[var(--color-text-tertiary)]"
+            >
+              {idx % labelStep === 0 ? formatDateBR(p.day, "dd/MM") : "\u00a0"}
+            </span>
+          ))}
+        </div>
       </div>
     </div>
   );
